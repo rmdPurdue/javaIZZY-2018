@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="lib">
+    <CLASSES>
+      <root url="file://C:/pi4j-1.2-SNAPSHOT/lib" />
+      <root url="file://C:/javaosc/javaosc/lib" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://C:/javaosc/javaosc/doc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://C:/pi4j-1.2-SNAPSHOT/lib" />
+      <root url="file://C:/javaosc/javaosc/src" />
+    </SOURCES>
+    <jarDirectory url="file://C:/javaosc/javaosc/lib" recursive="false" />
+    <jarDirectory url="file://C:/pi4j-1.2-SNAPSHOT/lib" recursive="false" />
+    <jarDirectory url="file://C:/pi4j-1.2-SNAPSHOT/lib" recursive="false" type="SOURCES" />
+  </library>
+</component>
