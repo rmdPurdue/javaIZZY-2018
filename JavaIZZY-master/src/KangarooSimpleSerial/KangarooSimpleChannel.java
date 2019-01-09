@@ -35,19 +35,21 @@ public class KangarooSimpleChannel {
         kangaroo.write(this, command);
     }
 
-    public void getS() {
+    public int getS() {
         String command = ("gets" + '\r');
         kangaroo.write(this, command);
+        return 0;
     }
 
-    public void getP() {
+    public int getP() {
         String command = ("getp" + '\r');
         kangaroo.write(this, command);
+        return 0;
     }
 
     public void start(){
         String command =("start" + '\r');
         kangaroo.write(this, command);
-        System.out.println("System has started\n");
+        //System.out.println("System has started\n");
     }
 }

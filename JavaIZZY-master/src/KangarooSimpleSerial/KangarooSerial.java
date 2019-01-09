@@ -6,6 +6,7 @@ import com.pi4j.io.serial.*;
 
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * @author Rich Dionne
@@ -44,7 +45,7 @@ public class KangarooSerial implements AutoCloseable {
     }
 
     public void open() {
-//        System.out.println(this.port.toString());
+//        System.out.println(this.port.valueOf());
         open("/dev/ttyAMA0");
     }
 
@@ -83,13 +84,12 @@ public class KangarooSerial implements AutoCloseable {
             }
             try {
                 byte[] data = this.serial.read();
-                System.out.println("Received: ");
+                System.out.print("Received: ");
                 for(byte datum : data) {
                     System.out.print(datum + " ");
                 }
                 System.out.println("debug ended");
-                System.out.print(new String(data));
-                System.out.println();
+                System.out.print("As string: " + new String(data));
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -99,13 +99,14 @@ public class KangarooSerial implements AutoCloseable {
 
     public void write(KangarooSimpleChannel channel, String command) {
         if(!open) {
+            System.out.println("Error: port not open.");
             return;
         }
         String commandToSend = channel.getName() + "," + command;
-        System.out.println(commandToSend);
+        System.out.println("Sending: " + commandToSend);
         byte[] data = commandToSend.getBytes();
         for(byte datum : data) {
-            System.out.println(datum);
+            //System.out.println(datum);
         }
         try {
             serial.write(data);
@@ -119,5 +120,4 @@ public class KangarooSerial implements AutoCloseable {
             e.printStackTrace();
         }
     }
-
 }

@@ -1,7 +1,7 @@
 import KangarooSimpleSerial.KangarooSimpleChannel;
 
 import java.util.ArrayList;
-public class IZZYPosition {
+public class IZZYController {
 
     private int homex = 0;
     private int homey = 0;
@@ -18,7 +18,7 @@ public class IZZYPosition {
     public KangarooSimpleChannel D;
     public KangarooSimpleChannel T;
 
-    IZZYPosition() {
+    IZZYController() {
         this.homex = 0;
         this.homey = 0;
         this.homez = 0;
@@ -28,7 +28,7 @@ public class IZZYPosition {
         this.angle = 0;
     }
 
-    IZZYPosition(int x, int y, int z) {
+    IZZYController(int x, int y, int z) {
         this.homex = x;
         this.homey = y;
         this.homez = z;
@@ -49,6 +49,14 @@ public class IZZYPosition {
         this.D.start();
         this.T.start();
         D.units("1 rotation = 512 lines");
+    }
+
+    public int getCurrentPosition() {
+        return D.getP();
+    }
+
+    public int getCurrentSpeed() {
+        return D.getS();
     }
 
     public ArrayList<Object> getPosition() {
@@ -74,7 +82,7 @@ public class IZZYPosition {
     }
 
     public void izzyTurn(int angleIn) {
-        System.out.println("turning now to " + angleIn);
+        //System.out.println("turning now to " + angleIn);
         int lineAngle = this.systemrad*360*this.linesPRot;
         if(angleIn == 0){
             lineAngle = 0;
@@ -86,7 +94,9 @@ public class IZZYPosition {
     }
 
     public void izzyMove(int distance) {
-        this.D.P(distance);
+        System.out.println("Get a move command.");
+        D.P(10);
+        D.S(10);
     }
 
     public int izzySimpleMove(int x, int y, int z, int clockwise) {
@@ -103,7 +113,7 @@ public class IZZYPosition {
             CCWAngle = 0;
         }else {
             tanAngle = Math.atan((float)(this.positiony - y) / (float)(this.positionx - x)) * 360.0 / (2 * 3.14);
-            System.out.println("tanAngle: " + tanAngle);
+            //System.out.println("tanAngle: " + tanAngle);
             if (x > this.positionx) {
                 if (y > this.positiony) {
                     CCWAngle = tanAngle;
@@ -135,7 +145,7 @@ public class IZZYPosition {
             }
 
         }
-        System.out.println("moving now");
+        //System.out.println("moving now");
         distance = Math.sqrt(Math.pow(this.positionx - x,2) + Math.pow(this.positiony - y,2));
         this.izzyMove((int)distance);
         this.updatePosition(x,y,z);
