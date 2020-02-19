@@ -6,34 +6,18 @@ import KangarooSimpleSerial.KangarooSimpleChannel;
 import LineFollowing.LineSensor;
 import LineFollowing.SensorArray;
 import com.illposed.osc.*;
-
 import java.io.IOException;
-
-import java.text.DecimalFormat;
-
-
 import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
-
 import com.pi4j.gpio.extension.ads.ADS1115Pin;
-
 import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifierValue;
-
 import com.pi4j.io.gpio.GpioController;
-
 import com.pi4j.io.gpio.GpioFactory;
-
-import com.pi4j.io.gpio.GpioPinAnalogInput;
-
 import com.pi4j.io.gpio.event.GpioPinAnalogValueChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerAnalog;
 import com.pi4j.io.i2c.I2CBus;
-
 import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
-
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+
 /**
  * @author Rich Dionne
  * @project JavaIZZY
@@ -53,15 +37,6 @@ public class Main {
         final double DANGER_THRESHOLD_MICRONS = DANGER_THRESHOLD_CM * 10000;
         final double WARNING_THRESHOLD_MICRONS = WARNING_THRESHOLD_CM * 10000;
 
-        final String ANSI_RESET = "\u001B[0m";
-        final String ANSI_BLACK = "\u001B[30m";
-        final String ANSI_RED = "\u001B[31m";
-        final String ANSI_GREEN = "\u001B[32m";
-        final String ANSI_YELLOW = "\u001B[33m";
-        final String ANSI_BLUE = "\u001B[34m";
-        final String ANSI_PURPLE = "\u001B[35m";
-        final String ANSI_CYAN = "\u001B[36m";
-        final String ANSI_WHITE = "\u001B[37m";
         System.out.println("Hello from IZZY!");
 
         // create gpio controller
@@ -72,32 +47,32 @@ public class Main {
 
         gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
 
-        /*
-            The listener below should somehow end up in the sensor array, to be triggered there. How?
-         */
-        gpioProvider.setEventThreshold(150, ADS1115Pin.ALL);
-        gpioProvider.setMonitorInterval(100);
 
-        GpioPinListenerAnalog analogListener = new GpioPinListenerAnalog() {
-            @Override
-            public void handleGpioPinAnalogValueChangeEvent(GpioPinAnalogValueChangeEvent event) {
-                double value = event.getValue();
-                double percent = ((value * 100) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
-                double voltage = gpioProvider.getProgrammableGainAmplifier(event.getPin()).getVoltage() * (percent / 100);
-            }
-        };
+        //    The listener below should somehow end up in the sensor array, to be triggered there. How?
 
-        LineSensor sensor1 = new LineSensor();
-        LineSensor sensor2 = new LineSensor();
-        LineSensor sensor3 = new LineSensor();
+//        gpioProvider.setEventThreshold(150, ADS1115Pin.ALL);
+//        gpioProvider.setMonitorInterval(100);
 
-        sensor1.setDistance(-1);
-        sensor2.setDistance(0);
-        sensor3.setDistance(1);
+//        GpioPinListenerAnalog analogListener = new GpioPinListenerAnalog() {
+//            @Override
+//            public void handleGpioPinAnalogValueChangeEvent(GpioPinAnalogValueChangeEvent event) {
+//                double value = event.getValue();
+//                double percent = ((value * 100) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
+//                double voltage = gpioProvider.getProgrammableGainAmplifier(event.getPin()).getVoltage() * (percent / 100);
+//            }
+//        };
+
+        LineSensor sensor1 = new LineSensor(15000);
+        LineSensor sensor2 = new LineSensor(15000);
+        LineSensor sensor3 = new LineSensor(15000);
 
         sensor1.setAnalogInput(gpio.provisionAnalogInputPin(gpioProvider, ADS1115Pin.INPUT_A0, "DistanceSensor-A0"));
         sensor2.setAnalogInput(gpio.provisionAnalogInputPin(gpioProvider, ADS1115Pin.INPUT_A1, "DistanceSensor-A1"));
         sensor3.setAnalogInput(gpio.provisionAnalogInputPin(gpioProvider, ADS1115Pin.INPUT_A2, "DistanceSensor-A2"));
+
+//        sensor1.setGain(-1);
+//        sensor2.setGain(0);
+//        sensor3.setGain(1);
 
         SensorArray sensorArray = new SensorArray();
         sensorArray.addSensor(sensor1);
@@ -105,9 +80,8 @@ public class Main {
         sensorArray.addSensor(sensor3);
 
         int i = 0;
-        while(i < 1000) {
-            sensorArray.pidValue();
-/*            double sensor1Value = sensor1.getSensorReading();
+//        while(i < 1000) {
+/*          double sensor1Value = sensor1.getSensorReading();
             double sensor1Percent = ((sensor1Value * 100) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
             double sensor1Voltage = gpioProvider.getProgrammableGainAmplifier(sensor1.getAnalogInput()).getVoltage() * (sensor1Percent / 100);
             double sensor2Value = sensor2.getSensorReading();
@@ -116,15 +90,18 @@ public class Main {
             double sensor3Value = sensor3.getSensorReading();
             double sensor3Percent = ((sensor3Value * 100) / ADS1115GpioProvider.ADS1115_RANGE_MAX_VALUE);
             double sensor3Voltage = gpioProvider.getProgrammableGainAmplifier(sensor3.getAnalogInput()).getVoltage() * (sensor3Percent / 100);
-
+(
             System.out.println(sensor1.getAnalogInput().getName() + " = " + sensor1Voltage);
             System.out.println(sensor2.getAnalogInput().getName() + " = " + sensor2Voltage);
             System.out.println(sensor3.getAnalogInput().getName() + " = " + sensor3Voltage);
-            System.out.println();*/
-            System.out.println(sensorArray.pidValue());
-            Thread.sleep(100);
+            System.out.println();
+
+            sensorArray.calculatePID();
+            System.out.println(sensorArray.getPidValue());
+            Thread.sleep(1000);
             i++;
         }
+        */
 
         KangarooSerial kangaroo = new KangarooSerial();
         IZZYPosition IZZYPos = new IZZYPosition();
@@ -132,7 +109,9 @@ public class Main {
         KangarooSimpleChannel D = new KangarooSimpleChannel(kangaroo, 'D');
         KangarooSimpleChannel T = new KangarooSimpleChannel(kangaroo, 'T');
         IZZYPos.setChannels(D,T);
-        IZZYPos.setup(3,9,42);
+        IZZYPos.setup(3,7,42);
+        //IZZYPos.izzyMove(2000);
+        //IZZYPos.izzyTurn(3); //WHAT UNITS?
         OSCPortIn receiver = new OSCPortIn(9000);
 
         OSCListener listener = (time, motherMessage) -> {
@@ -142,7 +121,7 @@ public class Main {
         };
         receiver.addListener("/IZZY/SimpleMove", listener);
         receiver.startListening();
-        while(true);
+        //while(true);
         /*D.getP();
         T.getP();
         //One.getP();

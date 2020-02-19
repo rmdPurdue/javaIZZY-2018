@@ -30,6 +30,15 @@ public class KangarooSimpleChannel {
         kangaroo.write(this, command);
     }
 
+    public void PI(int units) {
+        String command = ("pi" + Integer.toString(units) + '\r' + '\n');
+        kangaroo.write(this, command);
+    }
+
+    public void SI(int units) {
+        String command = ("si" + Integer.toString(units) + '\r' + '\n');
+        kangaroo.write(this, command);
+    }
     public void units(String unit){
         String command = (unit);
         kangaroo.write(this, command);

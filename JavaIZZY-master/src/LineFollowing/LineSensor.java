@@ -4,47 +4,61 @@ import com.pi4j.io.gpio.GpioPinAnalogInput;
 
 public class LineSensor
     {
-        int pinNumber;
-        GpioPinAnalogInput analogInput;
-        int sensorReading;
-        int distance;
+//        private int pinNumber;
+        private double gain;
+        private int threshold;
+        private GpioPinAnalogInput analogInput;
 
-        public int getPinNumber() {
-            return pinNumber;
+//        public LineSensor(int pinNumber) {
+//            this.pinNumber = pinNumber;
+//        }
+
+        public LineSensor(int thresh) {
+            this.threshold = thresh;
         }
 
-        public void setPinNumber(int pinNumber) {
-            this.pinNumber = pinNumber;
+        public double getGain() {
+            return this.gain;
+        }
+
+        public void setGain(double gain)
+        {
+            this.gain = gain;
+        }
+
+        public int getThreshold() {
+            return this.threshold;
+        }
+
+//        public int getPinNumber() {
+//            return pinNumber;
+//        }
+//
+//        public void setPinNumber(int pinNumber) {
+//            this.pinNumber = pinNumber;
+//        }
+
+        public GpioPinAnalogInput getAnalogInput() {
+            return this.analogInput;
         }
 
         public void setAnalogInput(GpioPinAnalogInput input) {
-            analogInput = input;
+            this.analogInput = input;
         }
 
-        public GpioPinAnalogInput getAnalogInput() {
-            return analogInput;
+        public double getSensorReading() {
+            return this.analogInput.getValue();
         }
 
-        public double getSensorReading() { return analogInput.getValue(); }
-
-        public void setSensorReading(int sensorReading) {
-            this.sensorReading = sensorReading;
+        public boolean getSensorState() {
+            if (getSensorReading() >= getThreshold()) {
+                return false; // sensor not reading
+            }
+            else {
+                return true; // sensor reading
+            }
         }
 
-        public int getDistance() {
-            return distance;
-        }
 
-        public void setDistance(int distance)
-        {
-            this.distance = distance;
-        }
-
-        public LineSensor(int pinNumber) {
-            this.pinNumber = pinNumber;
-        }
-        public LineSensor() {
-
-        }
     }
 

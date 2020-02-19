@@ -46,6 +46,7 @@ public class SerialTest {
                     " We are sending ASCII data on the serial port every 1 second.",
                     " Data received on serial port will be displayed below.");
             serial.open(config);
+            System.out.println("Serial Openned!");
             while (console.isRunning()) {
                 try {
                     serial.write("CURRENT TIME: " + new Date().toString());

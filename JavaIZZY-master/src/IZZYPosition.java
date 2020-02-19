@@ -48,6 +48,8 @@ public class IZZYPosition {
         this.T = turn;
         this.D.start();
         this.T.start();
+        this.D.P(0);
+        this.T.P(0);
         D.units("1 rotation = 512 lines");
     }
 

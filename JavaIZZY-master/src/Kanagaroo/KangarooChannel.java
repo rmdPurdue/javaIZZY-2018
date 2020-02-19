@@ -211,6 +211,7 @@ public class KangarooChannel {
 
     public KangarooError start() {
         KangarooCommandWriter contents = new KangarooCommandWriter();
+        System.out.println("start command number: " + KangarooCommand.START.getValue());
         return set(KangarooCommand.START.getValue(), contents).status().getError();
     }
 
@@ -295,6 +296,7 @@ public class KangarooChannel {
         if( 0 != (moveFlags.getValue() & KangarooMoveFlags.SEQUENCE_CODE.getValue())) {
             writer.write(this.monitoredSequenceCode);
         }
+
         writer.write(contents.getData(), contents.getOffset(), contents.getLength());
 
         try {

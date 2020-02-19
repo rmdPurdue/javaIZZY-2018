@@ -1,37 +1,42 @@
 package LineFollowing;
 
+import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 public class SensorArray
 {
-    double errorSum;
-    double lastError;
-    float kp;
-    float ki;
-    float kd;
-    float error = 0;
+    private double errorSum;
+    private double error;
+    private double kp;
+    private double ki;
+    private double kd;
+    private double yDistance;
+    private double pidValue;
+    private double setpoint;
+    private boolean rotating;
+
     ArrayList<LineSensor> sensorList = new ArrayList<>();
 
     public SensorArray(){
         errorSum = 0;
-        lastError = 0;
-
-        kp = 2;
-        ki = (float) .5;
-        kd = (float) .7;
         error = 0;
+        kp = 5;
+        ki = 0.3;
+        kd = 1;
+        yDistance = 19.5;
     }
 
     public void addSensor(LineSensor sensor){
         sensorList.add(sensor);
     }
-    public LineSensor getSensor(int index){
-        return sensorList.get(index);
-    }
+
+//    public LineSensor getSensor(int index){
+//        return sensorList.get(index);
+//    }
 
     public double getKp() {
-        return kp;
+        return this.kp;
     }
 
     public void setKp(float kp) {
@@ -39,7 +44,7 @@ public class SensorArray
     }
 
     public double getKi() {
-        return ki;
+        return this.ki;
     }
 
     public void setKi(float ki) {
@@ -47,47 +52,68 @@ public class SensorArray
     }
 
     public double getKd() {
-        return kd;
+        return this.kd;
     }
 
     public void setKd(float kd) {
         this.kd = kd;
     }
 
+    public double getYDistance() {
+        return this.yDistance;
+    }
 
-    public void getError() {
-        float numerator = 0;
-        float denominator = 0;
+    public void setYDistance(double yDistance) {
+        this.yDistance = yDistance;
+    }
 
-        Iterator itr = sensorList.iterator();
+    public double getSetpoint() {
+        return this.setpoint;
+    }
 
-        while(itr.hasNext()){
-            LineSensor sensor = (LineSensor)itr.next();
-            //System.out.println(sensor.getAnalogInput().getName() + " = " + sensor.getSensorReading());
-            numerator += sensor.getDistance() * sensor.getSensorReading();
-            denominator += sensor.getSensorReading();
-            error =  numerator/denominator;
-        }
+    public void setSetpoint() {
+        double set = 0;
+//        for (LineSensor sensor : sensorList) {
+//            if (sensor.getGain() == 0) {
+//                set += sensor.getMinReading();
+//            }
+//            else {
+//                set += sensor.getMaxReading();
+//            }
+//        }
+    }
+
+    public double getErrorAngle() {
+        return -(Math.atan(getError()/yDistance));
     }
 
 
-    public double geterrorSum() {
-        errorSum = error + errorSum;
+    public double getError() {
+        double setpoint = 0;
+        double reading = 0;
+        int sensorsAtMin = 0;
+        boolean[] sensors[];
+        for (LineSensor sensor : sensorList) {
+            System.out.println(sensor.getAnalogInput().getName() + " = " + sensor.getSensorReading());
+            reading += sensor.getGain() * sensor.getSensorReading();
+        }
+        return error;
+    }
+
+    public double getErrorSum() {
+        errorSum += error;
         return errorSum;
     }
 
-    public double getlastError() {
-        return lastError = error;
+    public void calculatePID() {
+        double proportional = getKp() * getError();
+        double integral = getKi() * getErrorSum();
+        //double derivative = getKd() * getPreviousError();
+
+        pidValue = proportional + integral;
     }
 
-    public double pidValue()
-    {
-        getError();
-        double integral = ki * geterrorSum();
-        double proportional = kp * error;
-        double derivative = kd * (error - lastError);
-        lastError = error;
-
-      return integral + proportional + derivative;
+    public double getPidValue() {
+        return pidValue;
     }
 }
