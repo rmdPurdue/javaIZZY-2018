@@ -13,12 +13,12 @@ public class IZZYPosition {
     private int angle = 0;
     private int wheelrad = 0;
     private int systemrad = 0;
-    private int linesPRot = 0;
+    private int linesPerRotation = 0;
 
     public KangarooSimpleChannel D;
     public KangarooSimpleChannel T;
 
-    IZZYPosition() {
+    IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, int wheelrad, int systemrad, int linesPerRotation) {
         this.homex = 0;
         this.homey = 0;
         this.homez = 0;
@@ -26,31 +26,17 @@ public class IZZYPosition {
         this.positiony = 0;
         this.positionz = 0;
         this.angle = 0;
-    }
-
-    IZZYPosition(int x, int y, int z) {
-        this.homex = x;
-        this.homey = y;
-        this.homez = z;
-        this.positionx = x;
-        this.positiony = y;
-        this.positionz = z;
-        this.angle = 0;
-    }
-
-    public void setup(int wheelrad, int systemrad, int linesPRot){
-        this.wheelrad = wheelrad;
-        this.systemrad = systemrad;
-        this.linesPRot = linesPRot;
-    }
-    public void setChannels(KangarooSimpleChannel drive, KangarooSimpleChannel turn){
         this.D = drive;
         this.T = turn;
         this.D.start();
         this.T.start();
         this.D.P(0);
         this.T.P(0);
-        D.units("1 rotation = 512 lines");
+        D.units("1 rotation = " + linesPerRotation + " lines"); // TODO: Calibrate for small IZZY
+                                                                // (using Kangaroo Documentation and encoder resolution)
+        this.wheelrad = wheelrad;
+        this.systemrad = systemrad;
+        this.linesPerRotation = linesPerRotation;
     }
 
     public ArrayList<Object> getPosition() {
@@ -77,7 +63,7 @@ public class IZZYPosition {
 
     public void izzyTurn(int angleIn) {
         System.out.println("turning now to " + angleIn);
-        int lineAngle = this.systemrad*360*this.linesPRot;
+        int lineAngle = this.systemrad*360*this.linesPerRotation;
         if(angleIn == 0){
             lineAngle = 0;
         }

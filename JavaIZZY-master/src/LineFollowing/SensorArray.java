@@ -6,25 +6,26 @@ import java.util.Iterator;
 
 public class SensorArray
 {
-    private double errorSum;
-    private double error;
-    private double kp;
-    private double ki;
-    private double kd;
+    private int previousError;
+    private int errorSum;
+    private int error;
+    private int kp;
+    private int ki;
+    private int kd;
     private double yDistance;
-    private double pidValue;
-    private double setpoint;
-    private boolean rotating;
+    private int pidValue;
+    private boolean[] signalArray;
 
     ArrayList<LineSensor> sensorList = new ArrayList<>();
 
-    public SensorArray(){
-        errorSum = 0;
-        error = 0;
-        kp = 5;
-        ki = 0.3;
-        kd = 1;
-        yDistance = 19.5;
+    public SensorArray(int kp, int ki, int kd, double yDistance) {
+        this.kp = kp;
+        this.ki = ki;
+        this.kd = kd;
+        this.yDistance = yDistance;
+        this.errorSum = 0;
+        this.error = 0;
+        this.signalArray = new boolean[3]; //3 sensor array (need to adjust readSensors() if adding more sensors)
     }
 
     public void addSensor(LineSensor sensor){
@@ -35,27 +36,27 @@ public class SensorArray
 //        return sensorList.get(index);
 //    }
 
-    public double getKp() {
+    public int getKp() {
         return this.kp;
     }
 
-    public void setKp(float kp) {
+    public void setKp(int kp) {
         this.kp = kp;
     }
 
-    public double getKi() {
+    public int getKi() {
         return this.ki;
     }
 
-    public void setKi(float ki) {
+    public void setKi(int ki) {
         this.ki = ki;
     }
 
-    public double getKd() {
+    public int getKd() {
         return this.kd;
     }
 
-    public void setKd(float kd) {
+    public void setKd(int kd) {
         this.kd = kd;
     }
 
@@ -67,50 +68,51 @@ public class SensorArray
         this.yDistance = yDistance;
     }
 
-    public double getSetpoint() {
-        return this.setpoint;
-    }
-
-    public void setSetpoint() {
-        double set = 0;
-//        for (LineSensor sensor : sensorList) {
-//            if (sensor.getGain() == 0) {
-//                set += sensor.getMinReading();
-//            }
-//            else {
-//                set += sensor.getMaxReading();
-//            }
-//        }
-    }
-
     public double getErrorAngle() {
-        return -(Math.atan(getError()/yDistance));
+        return -(Math.atan(error/yDistance));
     }
 
-
-    public double getError() {
-        double setpoint = 0;
-        double reading = 0;
-        int sensorsAtMin = 0;
-        boolean[] sensors[];
-        for (LineSensor sensor : sensorList) {
-            System.out.println(sensor.getAnalogInput().getName() + " = " + sensor.getSensorReading());
-            reading += sensor.getGain() * sensor.getSensorReading();
+    public void readSensors() {
+        //TODO: Set error values to the distance of the wire from center (in milimeters?)
+        for (int i = 0; i < sensorList.size(); i++) {
+            //System.out.println(sensorList.get(i).getAnalogInput().getName() + " = " + sensorList.get(i).getSensorReading());
+            signalArray[i] = sensorList.get(i).getSensorState(); //checks if wire is under sensor
         }
-        return error;
-    }
-
-    public double getErrorSum() {
-        errorSum += error;
-        return errorSum;
+        if (signalArray[0] && signalArray[1] && signalArray[2]) {           //  1   1   1
+            //STOP
+        }
+        else if (!signalArray[0] && !signalArray[1] && !signalArray[2]) {   //  -   -   -
+            //E-STOP!!!
+        }
+        else if (signalArray[0] && !signalArray[1] && !signalArray[2]) {    //  1   -   -
+            error = -2;
+        }
+        else if (signalArray[0] && signalArray[1] && !signalArray[2]) {     //  1   1   -
+            error = -1;
+        }
+        else if (!signalArray[0] && signalArray[1] && !signalArray[2]) {    //  -   1   -
+            error = 0;
+        }
+        else if (!signalArray[0] && signalArray[1] && signalArray[2]) {     //  -   1   1
+            error = 1;
+        }
+        else if (!signalArray[0] && !signalArray[1] && signalArray[2]) {    //  -   -   1
+            error = 2;
+        }
+        else {
+            //E-STOP!!!
+        }
     }
 
     public void calculatePID() {
-        double proportional = getKp() * getError();
-        double integral = getKi() * getErrorSum();
-        //double derivative = getKd() * getPreviousError();
+        int proportional = getKp() * error;
+        int integral = getKi() * errorSum;
+        int derivative = getKd() * previousError;
 
-        pidValue = proportional + integral;
+        pidValue = proportional + integral + derivative;
+
+        errorSum += error;
+        previousError = error;
     }
 
     public double getPidValue() {
