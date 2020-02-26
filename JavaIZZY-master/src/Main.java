@@ -66,8 +66,8 @@ public class Main {
 
         //Create IZZYPosition to control IZZY's movement
         IZZYPosition IZZYPos = new IZZYPosition(D, T, 3, 7, 512);
-        //IZZYPos.izzyMove(2000);
-        //IZZYPos.izzyTurn(3); //WHAT UNITS?
+        //IZZYPos.izzyMove(200); //UNITS = millimeters
+        //IZZYPos.izzyTurn(30); //WHAT UNITS?
 
         //Create OSC communication objects
         OSCPortIn receiver = new OSCPortIn(9000);
@@ -81,14 +81,14 @@ public class Main {
         receiver.startListening();
 
         int i = 0;
-        while(i < 1000) {
-            sensorArray.readSensors(); // updates the sensor array with current readings
-            sensorArray.calculatePID(); // calculates the adjustment needed for movement
-                    System.out.println(sensorArray.getPidValue()); //just for testing purposes
-            //TODO: Implement movement based on PIDValue (use different drive mode?). Kangaroo documentation helpful!
-            Thread.sleep(500); //need to decide on best value to use here
-            i++;
-        }
+//        while(i < 1000) {
+//            sensorArray.readSensors(); // updates the sensor array with current readings
+//            sensorArray.calculatePID(); // calculates the adjustment needed for movement
+//                    System.out.println(sensorArray.getPidValue()); //just for testing purposes
+//            //TODO: Implement movement based on PIDValue (use different drive mode?). Kangaroo documentation helpful!
+//            Thread.sleep(500); //need to decide on best value to use here
+//            i++;
+//        }
     }
 
     private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){

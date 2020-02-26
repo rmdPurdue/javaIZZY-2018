@@ -40,7 +40,7 @@ public class KangarooSimpleChannel {
         kangaroo.write(this, command);
     }
     public void units(String unit){
-        String command = (unit);
+        String command = (" units " + unit + '\r');
         kangaroo.write(this, command);
     }
 

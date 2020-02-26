@@ -105,7 +105,7 @@ public class KangarooSerial implements AutoCloseable {
         System.out.println(commandToSend);
         byte[] data = commandToSend.getBytes();
         for(byte datum : data) {
-            System.out.println(datum);
+            //System.out.println(datum);
         }
         try {
             serial.write(data);

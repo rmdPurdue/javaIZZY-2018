@@ -30,9 +30,11 @@ public class IZZYPosition {
         this.T = turn;
         this.D.start();
         this.T.start();
+        D.units("1995 mm = 19200 lines");
+        T.units("360 degrees = 4148 lines");
         this.D.P(0);
         this.T.P(0);
-        D.units("1 rotation = " + linesPerRotation + " lines"); // TODO: Calibrate for small IZZY
+        //D.units("1 rotation = " + linesPerRotation + " lines"); // TODO: Calibrate for small IZZY
                                                                 // (using Kangaroo Documentation and encoder resolution)
         this.wheelrad = wheelrad;
         this.systemrad = systemrad;
@@ -62,6 +64,7 @@ public class IZZYPosition {
     }
 
     public void izzyTurn(int angleIn) {
+        this.T.P(angleIn);
         System.out.println("turning now to " + angleIn);
         int lineAngle = this.systemrad*360*this.linesPerRotation;
         if(angleIn == 0){
@@ -70,7 +73,7 @@ public class IZZYPosition {
         else {
             lineAngle = lineAngle / (angleIn * this.wheelrad);
         }
-        this.T.P(lineAngle);
+
     }
 
     public void izzyMove(int distance) {
