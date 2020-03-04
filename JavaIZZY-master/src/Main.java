@@ -64,10 +64,13 @@ public class Main {
         KangarooSimpleChannel D = new KangarooSimpleChannel(kangaroo, 'D');
         KangarooSimpleChannel T = new KangarooSimpleChannel(kangaroo, 'T');
 
-        //Create IZZYPosition to control IZZY's movement
-        IZZYPosition IZZYPos = new IZZYPosition(D, T, 63.5, 7, 512); // TODO: fix constructor
+        //Create IZZYPosition to control mini IZZY's movement
+        IZZYPosition IZZYPos = new IZZYPosition(D, T, 31.75, 69.5, 16, 120);
         IZZYPos.izzyMove(100); //UNITS = millimeters
         IZZYPos.izzyTurn(30); //UNITS = degrees
+
+        //TODO: Method that makes IZZY follow line located in IZZY Posistion
+        //TODO: how will IZZY stop? command? horizontal line ( all three pos )?
 
         //Create OSC communication objects
         OSCPortIn receiver = new OSCPortIn(9000);

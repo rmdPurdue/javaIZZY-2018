@@ -11,14 +11,11 @@ public class IZZYPosition {
     private int positiony = 0;
     private int positionz = 0;
     private int angle = 0;
-    private double wheelrad = 0;
-    private double systemrad = 0;
-    private int linesPerRotation = 0;
 
     public KangarooSimpleChannel D;
     public KangarooSimpleChannel T;
 
-    IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, double wheelRadius, double systemrad, int encoderResolution, int motorRatio) {
+    IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, double wheelRad, double systemRad, int encoderResolution, int motorRatio) {
         this.homex = 0;
         this.homey = 0;
         this.homez = 0;
@@ -30,16 +27,14 @@ public class IZZYPosition {
         this.T = turn;
         this.D.start();
         this.T.start();
-        this.wheelrad = (int) wheelRadius;
-        this.systemrad = (int) systemrad;
-        this.linesPerRotation = encoderResolution;
 
-        int readableDrive = (int) (Math.PI * (wheelRadius * 2) + 0.5);
-        int lineDrive = encoderResolution * motorRatio;
-        int lineAngle = 4203;   //TODO: use wheel rad and system rad to calculate turn units
+        double readableDrive = (Math.PI * (wheelRad * 2)) * 10;
+        double lineDrive = (encoderResolution * motorRatio) * 10;
+        double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
 
-        this.D.units(readableDrive + " mm = " + lineDrive + " lines");
-        this.T.units("360 degrees = " + lineAngle + " lines");
+        this.D.units( (int)(readableDrive + 0.5) + " mm = " + (int)(lineDrive + 0.5) + " lines");
+        this.T.units("360 degrees = " + (int)(lineAngle + 0.5) + " lines");
+
         this.D.P(0);
         this.T.P(0);
 
@@ -69,22 +64,17 @@ public class IZZYPosition {
 
     public void izzyTurn(int angleIn) {
         this.T.P(angleIn);
-        System.out.println("turning now to " + angleIn);
-        int lineAngle = this.systemrad*360*this.linesPerRotation;
-        if(angleIn == 0){
-            lineAngle = 0;
-        }
-        else {
-            lineAngle = lineAngle / (angleIn * this.wheelrad);
-        }
-
+        System.out.println("turning to " + angleIn);
     }
 
     public void izzyMove(int distance) {
         this.D.P(distance);
+        System.out.println("moving to " + distance);
     }
 
     public int izzySimpleMove(int x, int y, int z, int clockwise) {
+        //TODO: Implement movement based on PIDValue (use different drive mode?). Kangaroo documentation helpful!
+
         double tanAngle;
         double CCWAngle;
         double CWAngle;
