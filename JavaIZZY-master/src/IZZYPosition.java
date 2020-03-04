@@ -11,14 +11,14 @@ public class IZZYPosition {
     private int positiony = 0;
     private int positionz = 0;
     private int angle = 0;
-    private int wheelrad = 0;
-    private int systemrad = 0;
+    private double wheelrad = 0;
+    private double systemrad = 0;
     private int linesPerRotation = 0;
 
     public KangarooSimpleChannel D;
     public KangarooSimpleChannel T;
 
-    IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, int wheelrad, int systemrad, int linesPerRotation) {
+    IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, double wheelRadius, double systemrad, int encoderResolution, int motorRatio) {
         this.homex = 0;
         this.homey = 0;
         this.homez = 0;
@@ -30,15 +30,19 @@ public class IZZYPosition {
         this.T = turn;
         this.D.start();
         this.T.start();
-        D.units("1995 mm = 19200 lines");
-        T.units("360 degrees = 4148 lines");
+        this.wheelrad = (int) wheelRadius;
+        this.systemrad = (int) systemrad;
+        this.linesPerRotation = encoderResolution;
+
+        int readableDrive = (int) (Math.PI * (wheelRadius * 2) + 0.5);
+        int lineDrive = encoderResolution * motorRatio;
+        int lineAngle = 4203;   //TODO: use wheel rad and system rad to calculate turn units
+
+        this.D.units(readableDrive + " mm = " + lineDrive + " lines");
+        this.T.units("360 degrees = " + lineAngle + " lines");
         this.D.P(0);
         this.T.P(0);
-        //D.units("1 rotation = " + linesPerRotation + " lines"); // TODO: Calibrate for small IZZY
-                                                                // (using Kangaroo Documentation and encoder resolution)
-        this.wheelrad = wheelrad;
-        this.systemrad = systemrad;
-        this.linesPerRotation = linesPerRotation;
+
     }
 
     public ArrayList<Object> getPosition() {

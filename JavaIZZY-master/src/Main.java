@@ -65,9 +65,9 @@ public class Main {
         KangarooSimpleChannel T = new KangarooSimpleChannel(kangaroo, 'T');
 
         //Create IZZYPosition to control IZZY's movement
-        IZZYPosition IZZYPos = new IZZYPosition(D, T, 3, 7, 512);
-        //IZZYPos.izzyMove(200); //UNITS = millimeters
-        //IZZYPos.izzyTurn(30); //WHAT UNITS?
+        IZZYPosition IZZYPos = new IZZYPosition(D, T, 63.5, 7, 512); // TODO: fix constructor
+        IZZYPos.izzyMove(100); //UNITS = millimeters
+        IZZYPos.izzyTurn(30); //UNITS = degrees
 
         //Create OSC communication objects
         OSCPortIn receiver = new OSCPortIn(9000);
