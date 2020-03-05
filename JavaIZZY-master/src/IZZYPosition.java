@@ -1,4 +1,5 @@
 import KangarooSimpleSerial.KangarooSimpleChannel;
+import LineFollowing.SensorArray;
 
 import java.util.ArrayList;
 public class IZZYPosition {
@@ -12,9 +13,19 @@ public class IZZYPosition {
     private int positionz = 0;
     private int angle = 0;
 
-    public KangarooSimpleChannel D;
-    public KangarooSimpleChannel T;
+    private KangarooSimpleChannel D;
+    private KangarooSimpleChannel T;
 
+    /**
+     * Creates instance of IZZYPosition class
+     *
+     * @param drive Drive channel ('D')
+     * @param turn Turn channel ('T')
+     * @param wheelRad radius of one wheel measured in mm
+     * @param systemRad distance from one wheel center to the other / 2
+     * @param encoderResolution the number of pulses per round
+     * @param motorRatio the amount of gear turns per one wheel turn
+     */
     IZZYPosition(KangarooSimpleChannel drive, KangarooSimpleChannel turn, double wheelRad, double systemRad, int encoderResolution, int motorRatio) {
         this.homex = 0;
         this.homey = 0;
@@ -27,19 +38,20 @@ public class IZZYPosition {
         this.T = turn;
         this.D.start();
         this.T.start();
-
         double readableDrive = (Math.PI * (wheelRad * 2)) * 10;
         double lineDrive = (encoderResolution * motorRatio) * 10;
         double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
-
         this.D.units( (int)(readableDrive + 0.5) + " mm = " + (int)(lineDrive + 0.5) + " lines");
         this.T.units("360 degrees = " + (int)(lineAngle + 0.5) + " lines");
-
         this.D.P(0);
         this.T.P(0);
-
     }
 
+    /**
+     * Not used with line following
+     *
+     * @return ArrayList of position variables
+     */
     public ArrayList<Object> getPosition() {
         ArrayList tmp = new ArrayList<Object>();
         tmp.add(this.positionx);
@@ -48,32 +60,103 @@ public class IZZYPosition {
         return tmp;
     }
 
+    /**
+     * Not used with line following
+     *
+     * @return Angle of system
+     */
     public int getAngle() {
         return this.angle;
     }
 
+    /**
+     * Not used with line following
+     *
+     * @param x x position
+     * @param y y position
+     * @param z z position
+     */
     public void updatePosition(int x, int y, int z) {
         this.positionx = x;
         this.positiony = y;
         this.positionz = z;
     }
 
+    /**
+     * Not used with line following
+     *
+     * @param angleIn updates angle of system
+     */
     public void updateAngle(int angleIn) {
         this.angle = angleIn;
     }
 
-    public void izzyTurn(int angleIn) {
+    /**
+     * Turns IZZY to specified angle based on current position
+     *
+     * @param angleIn set angle in degrees
+     */
+    public void izzyTurnTo(int angleIn) {
         this.T.P(angleIn);
-        System.out.println("turning to " + angleIn);
     }
 
-    public void izzyMove(int distance) {
+    /**
+     * Turns IZZY an incremented angle
+     *
+     * @param angleIn incrementing angle in degrees
+     */
+    public void izzyTurn(int angleIn) {
+        this.T.PI(angleIn);
+    }
+
+    /**
+     * Moves IZZY to a specified position
+     *
+     * @param distance the set distance from the starting point in mm
+     */
+    public void izzyMoveTo(int distance) {
         this.D.P(distance);
-        System.out.println("moving to " + distance);
     }
 
+    /**
+     * Moves IZZY an incremented distance
+     *
+     * @param distance the additional distance to cover in mm
+     */
+    public void izzyMove(int distance) {
+        this.D.PI(distance);
+    }
+
+    /**
+     * Moves IZZY an incremented distance at a specific speed
+     *
+     * @param distance distance in mm
+     * @param speed speed in mm/sec
+     */
+    public void izzyMove(int distance, int speed) {
+        this.D.PI(distance, speed);
+    }
+
+    /**
+     * IZZY adjusts movement based on lineFollowing inputs
+     *
+     * @param pid the error value as an angle in degrees
+     * @param speed the speed at which IZZY is moving in mm/sec
+     */
+    public void followLine(double pid, int speed) {
+        if (pid == 999) {
+            this.D.powerDown();
+            this.T.powerDown();
+        } else if (pid != 360) {
+            izzyMove(1000, speed); // by setting this as 1000, we limit the distance IZZY can travel without reading sensors to 100cm
+            izzyTurnTo((int) (pid + 0.5));
+        }
+    }
+
+    /**
+     * Not used with line following
+     */
     public int izzySimpleMove(int x, int y, int z, int clockwise) {
-        //TODO: Implement movement based on PIDValue (use different drive mode?). Kangaroo documentation helpful!
 
         double tanAngle;
         double CCWAngle;

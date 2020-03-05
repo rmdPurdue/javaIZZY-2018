@@ -21,42 +21,57 @@ public class KangarooSimpleChannel {
     }
 
     public void P(int units) {
-        String command = ("p" + Integer.toString(units) + '\r' + '\n');
+        String command = ("p" + units + '\r' + '\n');
+        kangaroo.write(this, command);
+    }
+
+    public void P(int units, int speed) {
+        String command = ("p" + units + " s" + speed + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void S(int units) {
-        String command = ("s" + Integer.toString(units) + '\r' + '\n');
+        String command = ("s" + units + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void PI(int units) {
-        String command = ("pi" + Integer.toString(units) + '\r' + '\n');
+        String command = ("pi" + units + '\r' + '\n');
+        kangaroo.write(this, command);
+    }
+
+    public void PI(int units, int speed) {
+        String command = ("pi" + units + " s" + speed + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void SI(int units) {
-        String command = ("si" + Integer.toString(units) + '\r' + '\n');
+        String command = ("si" + units + '\r' + '\n');
         kangaroo.write(this, command);
     }
     public void units(String unit){
-        String command = (" units " + unit + '\r');
+        String command = (" units " + unit + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void getS() {
-        String command = ("gets" + '\r');
+        String command = ("gets" + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void getP() {
-        String command = ("getp" + '\r');
+        String command = ("getp" + '\r' + '\n');
         kangaroo.write(this, command);
     }
 
     public void start(){
-        String command =("start" + '\r');
+        String command =("start" + '\r' + '\n');
         kangaroo.write(this, command);
         System.out.println("System has started\n");
+    }
+
+    public void powerDown() {
+        String command = ("powerdown" + '\r' + '\n');
+        kangaroo.write(this, command);
     }
 }

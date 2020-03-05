@@ -87,6 +87,8 @@ public class KangarooSerial implements AutoCloseable {
                 for(byte datum : data) {
                     System.out.print(datum + " ");
                 }
+                String dataString = new String(data);
+                System.out.println("As string: " + dataString);
                 System.out.println("debug ended");
                 System.out.print(new String(data));
                 System.out.println();

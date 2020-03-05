@@ -15,6 +15,8 @@ public class SensorArray
     private double yDistance;
     private int pidValue;
     private boolean[] signalArray;
+    private boolean estop;
+    private boolean stop;
 
     ArrayList<LineSensor> sensorList = new ArrayList<>();
 
@@ -26,15 +28,13 @@ public class SensorArray
         this.errorSum = 0;
         this.error = 0;
         this.signalArray = new boolean[3]; //3 sensor array (need to adjust readSensors() if adding more sensors)
+        this.estop = false;
+        this.stop = false;
     }
 
     public void addSensor(LineSensor sensor){
         sensorList.add(sensor);
     }
-
-//    public LineSensor getSensor(int index){
-//        return sensorList.get(index);
-//    }
 
     public int getKp() {
         return this.kp;
@@ -69,38 +69,39 @@ public class SensorArray
     }
 
     public double getErrorAngle() {
-        return -(Math.atan(error/yDistance));
+        if (estop) {
+            return 999;
+        } else if (stop) {
+            return 360;
+        } else {
+            return -(Math.atan(getPidValue() / yDistance));
+        }
     }
 
     public void readSensors() {
         //TODO: Set error values to the distance of the wire from center (in milimeters?)
-        for (int i = 0; i < sensorList.size(); i++) {
-            //System.out.println(sensorList.get(i).getAnalogInput().getName() + " = " + sensorList.get(i).getSensorReading());
-            signalArray[i] = sensorList.get(i).getSensorState(); //checks if wire is under sensor
-        }
-        if (signalArray[0] && signalArray[1] && signalArray[2]) {           //  1   1   1
-            //STOP
-        }
-        else if (!signalArray[0] && !signalArray[1] && !signalArray[2]) {   //  -   -   -
-            //E-STOP!!!
-        }
-        else if (signalArray[0] && !signalArray[1] && !signalArray[2]) {    //  1   -   -
-            error = -2;
-        }
-        else if (signalArray[0] && signalArray[1] && !signalArray[2]) {     //  1   1   -
-            error = -1;
-        }
-        else if (!signalArray[0] && signalArray[1] && !signalArray[2]) {    //  -   1   -
-            error = 0;
-        }
-        else if (!signalArray[0] && signalArray[1] && signalArray[2]) {     //  -   1   1
-            error = 1;
-        }
-        else if (!signalArray[0] && !signalArray[1] && signalArray[2]) {    //  -   -   1
-            error = 2;
-        }
-        else {
-            //E-STOP!!!
+        if (!estop) {
+            for (int i = 0; i < sensorList.size(); i++) {
+                //System.out.println(sensorList.get(i).getAnalogInput().getName() + " = " + sensorList.get(i).getSensorReading());
+                signalArray[i] = sensorList.get(i).getSensorState(); //checks if wire is under sensor
+            }
+            if (signalArray[0] && signalArray[1] && signalArray[2]) {           //  1   1   1
+                stop = true;
+            } else if (!signalArray[0] && !signalArray[1] && !signalArray[2]) {   //  -   -   -
+                estop = true;
+            } else if (signalArray[0] && !signalArray[1] && !signalArray[2]) {    //  1   -   -
+                error = -2;
+            } else if (signalArray[0] && signalArray[1] && !signalArray[2]) {     //  1   1   -
+                error = -1;
+            } else if (!signalArray[0] && signalArray[1] && !signalArray[2]) {    //  -   1   -
+                error = 0;
+            } else if (!signalArray[0] && signalArray[1] && signalArray[2]) {     //  -   1   1
+                error = 1;
+            } else if (!signalArray[0] && !signalArray[1] && signalArray[2]) {    //  -   -   1
+                error = 2;
+            } else {
+                estop = true;
+            }
         }
     }
 
@@ -108,9 +109,7 @@ public class SensorArray
         int proportional = getKp() * error;
         int integral = getKi() * errorSum;
         int derivative = getKd() * previousError;
-
         pidValue = proportional + integral + derivative;
-
         errorSum += error;
         previousError = error;
     }

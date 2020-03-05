@@ -26,17 +26,9 @@ import java.util.List;
  */
 public class Main {
 
-    public static void main(String[] args) throws java.net.SocketException,InterruptedException, UnsupportedBusNumberException, IOException{
+    public static boolean ESTOP;
 
-        /* Unused variables
-        final double SPEED_OF_SOUND = 0.343; // microns per ns
-        final int DANGER_THRESHOLD_INCHES = 6;
-        final int WARNING_THRESHOLD_INCHES = 18;
-        final double DANGER_THRESHOLD_CM = DANGER_THRESHOLD_INCHES * 2.54;
-        final double WARNING_THRESHOLD_CM = WARNING_THRESHOLD_INCHES * 2.54;
-        final double DANGER_THRESHOLD_MICRONS = DANGER_THRESHOLD_CM * 10000;
-        final double WARNING_THRESHOLD_MICRONS = WARNING_THRESHOLD_CM * 10000;
-        */
+    public static void main(String[] args) throws java.net.SocketException,InterruptedException, UnsupportedBusNumberException, IOException{
 
         System.out.println("Hello from IZZY!");
 
@@ -66,11 +58,8 @@ public class Main {
 
         //Create IZZYPosition to control mini IZZY's movement
         IZZYPosition IZZYPos = new IZZYPosition(D, T, 31.75, 69.5, 16, 120);
-        IZZYPos.izzyMove(100); //UNITS = millimeters
-        IZZYPos.izzyTurn(30); //UNITS = degrees
-
-        //TODO: Method that makes IZZY follow line located in IZZY Posistion
-        //TODO: how will IZZY stop? command? horizontal line ( all three pos )?
+//        IZZYPos.izzyMove(100); //UNITS = millimeters
+//        IZZYPos.izzyTurn(30); //UNITS = degrees
 
         //Create OSC communication objects
         OSCPortIn receiver = new OSCPortIn(9000);
@@ -84,14 +73,14 @@ public class Main {
         receiver.startListening();
 
         int i = 0;
-//        while(i < 1000) {
-//            sensorArray.readSensors(); // updates the sensor array with current readings
-//            sensorArray.calculatePID(); // calculates the adjustment needed for movement
-//                    System.out.println(sensorArray.getPidValue()); //just for testing purposes
-//            //TODO: Implement movement based on PIDValue (use different drive mode?). Kangaroo documentation helpful!
-//            Thread.sleep(500); //need to decide on best value to use here
-//            i++;
-//        }
+        while(i < 1000) {
+            sensorArray.readSensors(); // updates the sensor array with current readings
+            sensorArray.calculatePID(); // calculates the adjustment needed for movement
+                    System.out.println(sensorArray.getPidValue()); //just for testing purposes
+            IZZYPos.followLine(sensorArray.getErrorAngle(), 30); // Speed units = mm / sec
+            Thread.sleep(100); //need to decide on best value to use here
+            i++;
+        }
     }
 
     private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){
