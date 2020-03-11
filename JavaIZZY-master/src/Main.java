@@ -45,7 +45,7 @@ public class Main {
         LineSensor sensor3 = new LineSensor(15000, gpio.provisionAnalogInputPin(gpioProvider, ADS1115Pin.INPUT_A2, "DistanceSensor-A2"));
 
         //Create array of mapped sensors
-        SensorArray sensorArray = new SensorArray(50, 0, 0, 19.5);
+        SensorArray sensorArray = new SensorArray(1, 0, 0, 101.6);
         sensorArray.addSensor(sensor1);
         sensorArray.addSensor(sensor2);
         sensorArray.addSensor(sensor3);
@@ -77,10 +77,11 @@ public class Main {
             sensorArray.readSensors(); // updates the sensor array with current readings
             sensorArray.calculatePID(); // calculates the adjustment needed for movement
                     System.out.println(sensorArray.getPidValue()); //just for testing purposes
-            IZZYPos.followLine(sensorArray.getErrorAngle(), 30); // Speed units = mm / sec
+//            IZZYPos.followLine(sensorArray.getErrorAngle(), 30); // Speed units = mm / sec
             Thread.sleep(100); //need to decide on best value to use here
             i++;
         }
+
     }
 
     private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){
