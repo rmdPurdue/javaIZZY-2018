@@ -43,7 +43,7 @@ public class Main {
         LineSensor sensor3 = new LineSensor(15000, gpio.provisionAnalogInputPin(gpioProvider, ADS1115Pin.INPUT_A2, "DistanceSensor-A2"));
 
         //Create array of mapped sensors
-        SensorArray sensorArray = new SensorArray(50, 0, 0, 19.5);
+        SensorArray sensorArray = new SensorArray(1, 0, 0, 101.6);
         sensorArray.addSensor(sensor1);
         sensorArray.addSensor(sensor2);
         sensorArray.addSensor(sensor3);
@@ -75,6 +75,7 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){
