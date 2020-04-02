@@ -110,6 +110,9 @@ public class SensorArray
         int integral = getKi() * errorSum;
         int derivative = getKd() * previousError;
         pidValue = proportional + integral + derivative;
+        if (pidValue > 180) {
+            pidValue = 180;
+        }
         errorSum += error;
         previousError = error;
     }

@@ -154,6 +154,34 @@ public class IZZYPosition {
     }
 
     /**
+     * IZZY adjusts movement based on lineFollowing inputs
+     *
+     * @param sensorArray the active sensor array object
+     * @param speed the speed at which IZZY is moving in mm/sec
+     */
+    public void followLine(SensorArray sensorArray, int speed) throws Exception {
+        //TODO: Do on separate thread? 
+        int i = 0;
+        while(i < 1000) {
+            sensorArray.readSensors(); // updates the sensor array with current readings
+            sensorArray.calculatePID(); // calculates the adjustment needed for movement
+            System.out.println(sensorArray.getPidValue()); //just for testing purposes
+            double pid = sensorArray.getErrorAngle();
+            if (pid == 999) {
+                this.D.powerDown();
+                this.T.powerDown();
+                System.out.println("ESTOP TRIGGERED -- POWER OFF");
+                throw new RuntimeException();
+            } else if (pid != 360) {
+                izzyMove(1000, speed); // by setting this as 1000, we limit the distance IZZY can travel without reading sensors to 100cm
+                izzyTurnTo((int) (pid + 0.5));
+            }
+            Thread.sleep(100); //need to decide on best value to use here
+            i++;
+        }
+    }
+
+    /**
      * Not used with line following
      */
     public int izzySimpleMove(int x, int y, int z, int clockwise) {
@@ -169,7 +197,7 @@ public class IZZYPosition {
         else if(this.positiony == y){
             CWAngle = 0;
             CCWAngle = 0;
-        }else {
+        } else {
             tanAngle = Math.atan((float)(this.positiony - y) / (float)(this.positionx - x)) * 360.0 / (2 * 3.14);
             System.out.println("tanAngle: " + tanAngle);
             if (x > this.positionx) {
