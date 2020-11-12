@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="595e8ce2-dc87-4f9e-a997-fc471cc4d034" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/../.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/misc.xml" afterDir="false" />
-    </list>
+    <list default="true" id="595e8ce2-dc87-4f9e-a997-fc471cc4d034" name="Default" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -11,12 +9,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="318" />
-    <option name="y" value="-27" />
-    <option name="width" value="1347" />
-    <option name="height" value="690" />
   </component>
   <component name="ProjectId" id="1ZyVwgzVIsi2U4zGVk28E7NPsTr" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -89,9 +81,19 @@
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="600" y="374" key="#com.intellij.ide.util.projectWizard.JdkChooserPanel.MyDialog/0.0.1500.970/3000.8.1600.870@0.0.1500.970" timestamp="1585811580698" />
+    <state x="532" y="228" key="FileChooserDialogImpl" timestamp="1590767630785">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state x="532" y="228" key="FileChooserDialogImpl/0.0.1500.970/3000.8.1600.870@0.0.1500.970" timestamp="1586060281859" />
+    <state x="532" y="228" key="FileChooserDialogImpl/0.0.1500.970@0.0.1500.970" timestamp="1590767630785" />
     <state x="252" y="128" key="SettingsEditor" timestamp="1585811730303">
       <screen x="0" y="0" width="1500" height="970" />
     </state>
     <state x="252" y="128" key="SettingsEditor/0.0.1500.970/3000.8.1600.870@0.0.1500.970" timestamp="1585811730303" />
+    <state x="33" y="74" key="new project wizard" timestamp="1590767642215">
+      <screen x="0" y="0" width="1500" height="970" />
+    </state>
+    <state x="175" y="106" key="new project wizard/0.0.1500.970/3000.8.1600.870@0.0.1500.970" timestamp="1586060284204" />
+    <state x="33" y="74" key="new project wizard/0.0.1500.970@0.0.1500.970" timestamp="1590767642215" />
   </component>
 </project>
