@@ -4,11 +4,11 @@ public class PIDControl {
     private int error; //the stored value for the current error for the PID loop P function (in mm)
     private int errorSum; //the combined value of all previous errors for the PID loop I function (in mm)
     private int previousError; //the stored value of the previous error for the PID loop D function (in mm)
-    private int kp; //the ratio of the effect of the P value in the PID loop, adjusted for tuning
-    private int ki; //the ratio of the effect of the I value in the PID loop, adjusted for tuning
-    private int kd; //the ratio of the effect of the D value in the PID loop, adjusted for tuning
-    private int pidValue; //the stored PID value for the horizontal error
-    private SensorArray sensorArray;
+    private double kp; //the ratio of the effect of the P value in the PID loop, adjusted for tuning
+    private double ki; //the ratio of the effect of the I value in the PID loop, adjusted for tuning
+    private double kd; //the ratio of the effect of the D value in the PID loop, adjusted for tuning
+    private double pidValue; //the stored PID value for the horizontal error
+    private final SensorArray sensorArray;
 
     public PIDControl(int kp, int ki, int kd, SensorArray sensorArray) {
         this.kp = kp;
@@ -22,7 +22,7 @@ public class PIDControl {
      *
      * @return kP value of the PID loop
      */
-    public int getKp() {
+    public double getKp() {
         return this.kp;
     }
 
@@ -31,7 +31,7 @@ public class PIDControl {
      *
      * @param kp kP value of the PID loop
      */
-    public void setKp(int kp) {
+    public void setKp(double kp) {
         this.kp = kp;
     }
 
@@ -40,7 +40,7 @@ public class PIDControl {
      *
      * @return kI value of the PID loop
      */
-    public int getKi() {
+    public double getKi() {
         return this.ki;
     }
 
@@ -49,7 +49,7 @@ public class PIDControl {
      *
      * @param ki kI value of the PID loop
      */
-    public void setKi(int ki) {
+    public void setKi(double ki) {
         this.ki = ki;
     }
 
@@ -58,7 +58,7 @@ public class PIDControl {
      *
      * @return kD value of PID loop
      */
-    public int getKd() {
+    public double getKd() {
         return this.kd;
     }
 
@@ -67,7 +67,7 @@ public class PIDControl {
      *
      * @param kd kD value of the PID loop
      */
-    public void setKd(int kd) {
+    public void setKd(double kd) {
         this.kd = kd;
     }
 
@@ -76,7 +76,7 @@ public class PIDControl {
      *
      * @return PID value (horizontal error)
      */
-    public int getPidValue() {
+    public double getPidValue() {
         return pidValue;
     }
 
@@ -105,24 +105,21 @@ public class PIDControl {
         } else {
             throw new EStopException("Critical error in sensor states");
         }
-
-        System.out.println(signalArray[0] + " " + signalArray[1] + " " + signalArray[2]);
     }
 
     /**
      * Calculates the PID value (horizontal error) based on sensor error values
      */
-    public int calculatePID() {
-        int proportional = getKp() * error;
-        int integral = getKi() * errorSum;
-        int derivative = getKd() * previousError;
+    public double calculatePID() {
+        double proportional = getKp() * error;
+        double integral = getKi() * errorSum;
+        double derivative = getKd() * previousError;
         pidValue = proportional + integral + derivative;
         if (pidValue > 180) {
             pidValue = 180;
         }
         errorSum += error;
         previousError = error;
-        System.out.println(pidValue);
         return pidValue;
     }
 

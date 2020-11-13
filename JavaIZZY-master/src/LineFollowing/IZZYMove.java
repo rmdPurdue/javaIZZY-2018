@@ -80,7 +80,6 @@ public class IZZYMove {
      * @param speed the speed at which IZZY is moving in mm/sec
      */
     public void followLine(int errorAngle, int speed) throws Exception {
-        System.out.println("Error Angle: " + errorAngle); //just for testing purposes
         izzyMove(speed);
         izzyTurn(errorAngle);
     }

@@ -4,7 +4,9 @@ import LineFollowing.IZZYMove;
 import LineFollowing.LineSensor;
 import LineFollowing.PIDControl;
 import LineFollowing.SensorArray;
-import com.illposed.osc.*;
+import com.illposed.osc.OSCPortIn;
+import com.illposed.osc.OSCListener;
+import com.illposed.osc.OSCMessage;
 import java.io.IOException;
 import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
 import com.pi4j.gpio.extension.ads.ADS1115Pin;
@@ -13,7 +15,11 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
 import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
+
+import java.net.InetAddress;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Rich Dionne
@@ -23,12 +29,22 @@ import java.util.List;
  */
 public class Main {
 
-    private static int speed = 0;
-    private static boolean following;
+    private static AtomicInteger speed;
+    private static AtomicBoolean moving;
+    private static AtomicBoolean running;
+    private static PIDControl pidControl;
+    private static IZZYMove izzyMove;
+    private static SensorArray sensorArray;
+    private static KangarooSerial kangaroo;
+    private static KangarooSimpleChannel D;
+    private static KangarooSimpleChannel T;
 
-    public static void main(String[] args) throws java.net.SocketException,InterruptedException, UnsupportedBusNumberException, IOException{
+    public static void main(String[] args) throws java.net.SocketException, InterruptedException, UnsupportedBusNumberException, IOException {
 
         System.out.println("Hello from IZZY!");
+        running = new AtomicBoolean(true);
+        moving = new AtomicBoolean(false);
+        speed = new AtomicInteger(0);
 
         // create gpio controller
         final GpioController gpio = GpioFactory.getInstance();
@@ -47,114 +63,184 @@ public class Main {
                 ADS1115Pin.INPUT_A2, "DistanceSensor-A2"));
 
         //Create array of mapped sensors
-        SensorArray sensorArray = new SensorArray(101.6, 15, 30);
+        sensorArray = new SensorArray(101.6, 15, 30);
         sensorArray.addSensor(sensor1);
         sensorArray.addSensor(sensor2);
         sensorArray.addSensor(sensor3);
 
         //Connect to IZZY's motion controller and establish channels
-        KangarooSerial kangaroo = new KangarooSerial();
+        kangaroo = new KangarooSerial();
         kangaroo.open();
-        KangarooSimpleChannel D = new KangarooSimpleChannel(kangaroo, 'D');
-        KangarooSimpleChannel T = new KangarooSimpleChannel(kangaroo, 'T');
+        D = new KangarooSimpleChannel(kangaroo, 'D');
+        T = new KangarooSimpleChannel(kangaroo, 'T');
 
         //Create LineFollowing.IZZYMove to control mini IZZY's movement
-        IZZYMove izzyMove = new IZZYMove(D, T, 31.75, 69.5, 16, 120);
+        izzyMove = new IZZYMove(D, T, 31.75, 69.5, 16, 120);
 
         //Start LineFollowing PID Loop
-        PIDControl pidControl = new PIDControl(1, 1, 1, sensorArray);
+        pidControl = new PIDControl(1, 1, 1, sensorArray);
 
         //Create OSC communication objects
         OSCPortIn receiver = new OSCPortIn(9000);
-        OSCListener listener = (time, motherMessage) -> {
-            System.out.println("Message received from Mother!");
-            parseOSC(motherMessage, izzyMove, pidControl, sensorArray);
-        };
 
-        receiver.addListener("/IZZY/FollowLineState", listener);
+        OSCListener followLineStateListener = (time, motherMessage) -> {
+            System.out.println("Message received from Mother!");
+            parseFollowLineStateOSC(motherMessage);
+        };
+        OSCListener followLineSpeedListener = (time, motherMessage) -> {
+            System.out.println("Message received from Mother!");
+            parseFollowLineSpeedOSC(motherMessage);
+        };
+        OSCListener followLineTuneListener = (time, motherMessage) -> {
+            System.out.println("Message received from Mother!");
+            parseFollowLineTuneOSC(motherMessage);
+        };
+        OSCListener eStopListener = (time, motherMessage) -> {
+            System.out.println("ESTOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            eStopOSC(motherMessage);
+        };
+        receiver.addListener("/IZZY/FollowLineState", followLineStateListener);
+        receiver.addListener("/IZZY/FollowLineSpeed", followLineSpeedListener);
+        receiver.addListener("/IZZY/FollowLineTune", followLineTuneListener);
+        receiver.addListener("/IZZY/eStop", eStopListener);
+
         receiver.startListening();
 
+        Thread looping = new Thread(new LoopingLineFollowControl());
+        Thread updating = new Thread(new UpdateMotherValues());
 
+        looping.start();
+        updating.start();
 
-        int i = 0;
-        while(i < 1000) {
-            try {
-                pidControl.adjustError(sensorArray.readSensors());
-                pidControl.calculatePID();
-                izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), 30);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            i++;
-        }
+        looping.wait();
+        updating.wait();
+
+        receiver.close();
+
+//        int i = 0;
+//        while(i < 1000) {
+//            try {
+//                pidControl.adjustError(sensorArray.readSensors());
+//                pidControl.calculatePID();
+//                izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), 30);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            i++;
+//        }
     }
 
-    private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){
-        List<Object> msgArgs = msg.getArguments();
-        if (msg.getAddress() == "/IZZY/SimpleMove") {
-            System.out.println("calculating move");
-            IZZYPos.izzySimpleMove((int) msgArgs.get(0), (int) msgArgs.get(1), (int) msgArgs.get(2), 0);
-            /*if((int)msgArgs.get(0) == 0){
-                IZZYPos.T.P((int) msgArgs.get(1));
-            }
-            else{
-                IZZYPos.D.P((int) msgArgs.get(0));
-            }*/
-            //IZZYPos.T.P((int) msgArgs.get(1));
-            //IZZYPos.D.getP();
-        }
-    }
+//    private static void parseOSC(OSCMessage msg, IZZYPosition IZZYPos){
+//        List<Object> msgArgs = msg.getArguments();
+//        if (msg.getAddress() == "/IZZY/SimpleMove") {
+//            System.out.println("calculating move");
+//            IZZYPos.izzySimpleMove((int) msgArgs.get(0), (int) msgArgs.get(1), (int) msgArgs.get(2), 0);
+//            /*if((int)msgArgs.get(0) == 0){
+//                IZZYPos.T.P((int) msgArgs.get(1));
+//            }
+//            else{
+//                IZZYPos.D.P((int) msgArgs.get(0));
+//            }*/
+//            //IZZYPos.T.P((int) msgArgs.get(1));
+//            //IZZYPos.D.getP();
+//        }
+//    }
 
-    private static void parseOSC(OSCMessage msg, IZZYMove izzyMove, PIDControl pidControl, SensorArray sensorArray) {
+    private static void parseFollowLineStateOSC(OSCMessage msg) {
         List<Object> msgArgs = msg.getArguments();
         if (msg.getAddress().equals("/IZZY/FollowLineState")) {
             if (msgArgs.get(0).equals("start")) {
-                following = true;
-                try {
-                    do {
-                        pidControl.adjustError(sensorArray.readSensors());
-                        pidControl.calculatePID();
-                        izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), (int) msgArgs.get(1));
-                        Thread.sleep(100);
-                    } while (following);
-
-                } catch (Exception e) {
-                    System.out.println(e.getMessage());
-                }
-
+                moving.set(true);
             } else if (msgArgs.get(0).equals("stop")) {
-                following = false;
+                moving.set(false);
+            }
+            speed.set((int) msgArgs.get(1));
+        }
+    }
+
+    private static void parseFollowLineSpeedOSC(OSCMessage msg) {
+        List<Object> msgArgs = msg.getArguments();
+        if (msg.getAddress().equals("/IZZY/FollowLineSpeed")) {
+            speed.set((int) msgArgs.get(0));
+        }
+    }
+
+    private static void parseFollowLineTuneOSC(OSCMessage msg) {
+        List<Object> msgArgs = msg.getArguments();
+        if (msg.getAddress().equals("/IZZY/FollowLineTune")) {
+            pidControl.setKp((int) msgArgs.get(0));
+            pidControl.setKi((int) msgArgs.get(1));
+            pidControl.setKd((int) msgArgs.get(2));
+        }
+    }
+
+    private static void eStopOSC(OSCMessage msg) {
+        List<Object> msgArgs = msg.getArguments();
+        if (msg.getAddress().equals("/IZZY/eStop")) {
+            if (msgArgs.get(0).equals("eStop")) {
+                running.set(false);
+                moving.set(false);
+                speed.set(0);
+                D.powerDown();
+                T.powerDown();
             }
         }
     }
 
-    private class FollowLineThread implements Runnable {
-
-        PIDControl pidControl;
-        SensorArray sensorArray;
-        IZZYMove izzyMove;
-        List<Object> msgArgs;
-
-        public FollowLineThread(PIDControl pidControl, SensorArray sensorArray, IZZYMove izzyMove, List<Object> msgArgs) throws Exception {
-            this.pidControl = pidControl;
-            this.sensorArray = sensorArray;
-            this.izzyMove = izzyMove;
-            this.msgArgs = msgArgs;
+    private static class LoopingLineFollowControl implements Runnable {
+        @Override
+        public void run() {
+            try {
+                while (running.get()) {
+                    if (moving.get()) {
+                        try {
+                            pidControl.adjustError(sensorArray.readSensors());
+                            pidControl.calculatePID();
+                            izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), speed.get());
+                        } catch (Exception e) {
+                            System.out.println(e.getMessage());
+                        }
+                    } else {
+                        izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), 0);
+                    }
+                    Thread.sleep(250);
+                }
+            } catch (Exception e) {
+                System.out.println("The control interface has stopped looping");
+                e.printStackTrace();
+            }
         }
+    }
+
+    private static class UpdateMotherValues implements Runnable {
 
         @Override
         public void run() {
-            do {
-                try {
-                    pidControl.adjustError(sensorArray.readSensors());
-                    pidControl.calculatePID();
-                    izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), (int) msgArgs.get(1));
-                    Thread.sleep(100);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    break;
+            try {
+                InetAddress outgoingAddress = InetAddress.getByName("192.168.2.4");
+                int outgoingPort = 8000;
+                while (running.get()) {
+                    try {
+                        OSCMessage outgoingMessage = new OSCMessage();
+                        outgoingMessage.setAddress("/IZZYMother/Status");
+                        outgoingMessage.addArgument(speed);
+                        outgoingMessage.addArgument(pidControl.getPidValue());
+                        outgoingMessage.addArgument(pidControl.getErrorAngle());
+                        outgoingMessage.addArgument(pidControl.getKp());
+                        outgoingMessage.addArgument(pidControl.getKi());
+                        outgoingMessage.addArgument(pidControl.getKd());
+                        outgoingMessage.addArgument(moving.get());
+                        outgoingMessage.addArgument("Not Implemented");
+                        outgoingMessage.addArgument(sensorArray.readSensors());
+                    } catch(Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    Thread.sleep(1000);
                 }
-            } while (true);
+            } catch (Exception e) {
+                System.out.println("The communication interface has stopped looping");
+                e.printStackTrace();
+            }
         }
     }
 
