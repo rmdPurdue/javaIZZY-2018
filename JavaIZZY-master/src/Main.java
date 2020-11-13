@@ -8,6 +8,8 @@ import com.illposed.osc.OSCPortIn;
 import com.illposed.osc.OSCListener;
 import com.illposed.osc.OSCMessage;
 import java.io.IOException;
+
+import com.illposed.osc.OSCPortOut;
 import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
 import com.pi4j.gpio.extension.ads.ADS1115Pin;
 import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifierValue;
@@ -63,7 +65,7 @@ public class Main {
                 ADS1115Pin.INPUT_A2, "DistanceSensor-A2"));
 
         //Create array of mapped sensors
-        sensorArray = new SensorArray(101.6, 15, 30);
+        sensorArray = new SensorArray(101.6, 45, 30);
         sensorArray.addSensor(sensor1);
         sensorArray.addSensor(sensor2);
         sensorArray.addSensor(sensor3);
@@ -112,8 +114,9 @@ public class Main {
         looping.start();
         updating.start();
 
-        looping.wait();
-        updating.wait();
+        looping.join();
+        updating.join();
+
 
         receiver.close();
 
@@ -168,9 +171,9 @@ public class Main {
     private static void parseFollowLineTuneOSC(OSCMessage msg) {
         List<Object> msgArgs = msg.getArguments();
         if (msg.getAddress().equals("/IZZY/FollowLineTune")) {
-            pidControl.setKp((int) msgArgs.get(0));
-            pidControl.setKi((int) msgArgs.get(1));
-            pidControl.setKd((int) msgArgs.get(2));
+            pidControl.setKp((double) msgArgs.get(0));
+            pidControl.setKi((double) msgArgs.get(1));
+            pidControl.setKd((double) msgArgs.get(2));
         }
     }
 
@@ -192,17 +195,19 @@ public class Main {
         public void run() {
             try {
                 while (running.get()) {
-                    if (moving.get()) {
-                        try {
-                            pidControl.adjustError(sensorArray.readSensors());
+                    try {
+                        pidControl.adjustError(sensorArray.readSensors());
+                        if (moving.get()) {
                             pidControl.calculatePID();
                             izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), speed.get());
-                        } catch (Exception e) {
-                            System.out.println(e.getMessage());
                         }
-                    } else {
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    if (!moving.get()) {
                         izzyMove.followLine((int) (pidControl.getErrorAngle() + 0.5), 0);
                     }
+
                     Thread.sleep(250);
                 }
             } catch (Exception e) {
@@ -217,13 +222,13 @@ public class Main {
         @Override
         public void run() {
             try {
-                InetAddress outgoingAddress = InetAddress.getByName("192.168.2.4");
+                InetAddress outgoingAddress = InetAddress.getByName("192.168.2.3");
                 int outgoingPort = 8000;
                 while (running.get()) {
                     try {
                         OSCMessage outgoingMessage = new OSCMessage();
                         outgoingMessage.setAddress("/IZZYMother/Status");
-                        outgoingMessage.addArgument(speed);
+                        outgoingMessage.addArgument(speed.get());
                         outgoingMessage.addArgument(pidControl.getPidValue());
                         outgoingMessage.addArgument(pidControl.getErrorAngle());
                         outgoingMessage.addArgument(pidControl.getKp());
@@ -231,9 +236,17 @@ public class Main {
                         outgoingMessage.addArgument(pidControl.getKd());
                         outgoingMessage.addArgument(moving.get());
                         outgoingMessage.addArgument("Not Implemented");
-                        outgoingMessage.addArgument(sensorArray.readSensors());
+                        outgoingMessage.addArgument(sensorArray.readSensors()[0]);
+                        outgoingMessage.addArgument(sensorArray.readSensors()[1]);
+                        outgoingMessage.addArgument(sensorArray.readSensors()[2]);
+                        OSCPortOut sender = new OSCPortOut(outgoingAddress, outgoingPort);
+                        sender.send(outgoingMessage);
+                        sender.close();
+
+                        System.out.println(sensorArray.readSensors()[0] + " " + sensorArray.readSensors()[1] + " " + sensorArray.readSensors()[2]);
                     } catch(Exception e) {
                         System.out.println(e.getMessage());
+                        e.printStackTrace();
                     }
                     Thread.sleep(1000);
                 }

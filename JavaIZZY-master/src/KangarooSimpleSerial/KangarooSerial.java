@@ -104,7 +104,6 @@ public class KangarooSerial implements AutoCloseable {
             return;
         }
         String commandToSend = channel.getName() + "," + command;
-        System.out.println(commandToSend);
         byte[] data = commandToSend.getBytes();
         for(byte datum : data) {
             //System.out.println(datum);

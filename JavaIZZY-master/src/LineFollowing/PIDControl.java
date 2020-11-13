@@ -130,7 +130,8 @@ public class PIDControl {
      * @return the angle the system needs to turn in order to stay on the wire path
      */
     public double getErrorAngle() {
-        return -(Math.atan(getPidValue() / sensorArray.getYDistance()));
+        System.out.println("Error Angle: " + (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI);
+        return (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI;
     }
 
 }
