@@ -1,16 +1,16 @@
-package LineFollowing;
+package IZZYMovement;
 
 import KangarooSimpleSerial.KangarooSimpleChannel;
 
 public class IZZYMove {
 
-    private KangarooSimpleChannel D;
-    private KangarooSimpleChannel T;
+    private final KangarooSimpleChannel D;
+    private final KangarooSimpleChannel T;
     private int driveSpeed;
     private int angleSetPoint;
 
     /**
-     * Creates instance of LineFollowing.IZZYMove class
+     * Creates instance of IZZYMovement.IZZYMove class
      *
      * @param drive Drive channel ('D')
      * @param turn Turn channel ('T')
@@ -19,7 +19,8 @@ public class IZZYMove {
      * @param encoderResolution the number of pulses per round
      * @param motorRatio the amount of gear turns per one wheel turn
      */
-    public IZZYMove(KangarooSimpleChannel drive, KangarooSimpleChannel turn, double wheelRad, double systemRad, int encoderResolution, int motorRatio) {
+    public IZZYMove(final KangarooSimpleChannel drive, final KangarooSimpleChannel turn, final double wheelRad,
+                    final double systemRad, final int encoderResolution, final int motorRatio) {
         this.D = drive;
         this.T = turn;
         this.D.start();
@@ -71,17 +72,6 @@ public class IZZYMove {
     public void izzyMoveIncrement(int speed) {
         this.driveSpeed += speed;
         this.D.SI(this.driveSpeed);
-    }
-
-    /**
-     * IZZY adjusts movement based on lineFollowing inputs
-     *
-     * @param errorAngle the angle of error detected in the system
-     * @param speed the speed at which IZZY is moving in mm/sec
-     */
-    public void followLine(int errorAngle, int speed) throws Exception {
-        izzyMove(speed);
-        izzyTurn(errorAngle);
     }
 
 }

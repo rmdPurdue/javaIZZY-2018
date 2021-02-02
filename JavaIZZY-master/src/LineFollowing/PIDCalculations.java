@@ -1,6 +1,6 @@
 package LineFollowing;
 
-public class PIDControl {
+public class PIDCalculations {
     private int error; //the stored value for the current error for the PID loop P function (in mm)
     private int errorSum; //the combined value of all previous errors for the PID loop I function (in mm)
     private int previousError; //the stored value of the previous error for the PID loop D function (in mm)
@@ -10,7 +10,7 @@ public class PIDControl {
     private double pidValue; //the stored PID value for the horizontal error
     private final SensorArray sensorArray;
 
-    public PIDControl(int kp, int ki, int kd, SensorArray sensorArray) {
+    public PIDCalculations(final int kp, final int ki, final int kd, final SensorArray sensorArray) {
         this.kp = kp;
         this.ki = ki;
         this.kd = kd;
@@ -31,7 +31,7 @@ public class PIDControl {
      *
      * @param kp kP value of the PID loop
      */
-    public void setKp(double kp) {
+    public void setKp(final double kp) {
         this.kp = kp;
     }
 
@@ -49,7 +49,7 @@ public class PIDControl {
      *
      * @param ki kI value of the PID loop
      */
-    public void setKi(double ki) {
+    public void setKi(final double ki) {
         this.ki = ki;
     }
 
@@ -67,7 +67,7 @@ public class PIDControl {
      *
      * @param kd kD value of the PID loop
      */
-    public void setKd(double kd) {
+    public void setKd(final double kd) {
         this.kd = kd;
     }
 
@@ -115,9 +115,6 @@ public class PIDControl {
         double integral = getKi() * errorSum;
         double derivative = getKd() * previousError;
         pidValue = proportional + integral + derivative;
-        if (pidValue > 180) {
-            pidValue = 180;
-        }
         errorSum += error;
         previousError = error;
         return pidValue;
@@ -130,6 +127,7 @@ public class PIDControl {
      * @return the angle the system needs to turn in order to stay on the wire path
      */
     public double getErrorAngle() {
+        //Math.atan returns in radians. We need degrees. Conversion: Radians * 180 / PI
         System.out.println("Error Angle: " + (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI);
         return (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI;
     }

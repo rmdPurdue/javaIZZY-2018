@@ -51,12 +51,7 @@ public class LineSensor {
      * @return Boolean representing if the sensor is detecting a wire
      */
     public boolean getSensorState() {
-        if (getSensorReading() >= getThreshold()) {
-            return false; // sensor not reading
-        }
-        else {
-            return true; // sensor reading
-        }
+        return (getSensorReading() < getThreshold()); // is sensor reading (lower value = reading)
     }
 
 }

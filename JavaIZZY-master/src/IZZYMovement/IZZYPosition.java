@@ -1,5 +1,6 @@
+package IZZYMovement;
+
 import KangarooSimpleSerial.KangarooSimpleChannel;
-import LineFollowing.SensorArray;
 
 import java.util.ArrayList;
 public class IZZYPosition {
@@ -17,7 +18,7 @@ public class IZZYPosition {
     private KangarooSimpleChannel T;
 
     /**
-     * Creates instance of IZZYPosition class
+     * Creates instance of IZZYMovement.IZZYPosition class
      *
      * @param drive Drive channel ('D')
      * @param turn Turn channel ('T')

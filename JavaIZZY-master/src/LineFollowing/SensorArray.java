@@ -12,7 +12,7 @@ public class SensorArray
     private int sensorSpacing; //the spacing between sensors (in mm)
     ArrayList<LineSensor> sensorList = new ArrayList<>(); //an ArrayList of all sensors stored in order from left to right
 
-    public SensorArray(double yDistance, int sensorSpacing, int sensorWidth) {
+    public SensorArray(final double yDistance, final int sensorSpacing, final int sensorWidth) {
         this.yDistance = yDistance;
         this.signalArray = new boolean[NUMBER_OF_SENSORS];
         this.sensorSpacing = sensorSpacing;
@@ -20,11 +20,11 @@ public class SensorArray
     }
 
     /**
-     * Adds a LineSensor object to the SensorArray. Should be added in sequential order
+     * Adds a LineSensor object to the SensorArray. Should be added in sequential order (L/C/R)
      *
      * @param sensor a line sensor object
      */
-    public void addSensor(LineSensor sensor){
+    public void addSensor(final LineSensor sensor){
         sensorList.add(sensor);
     }
 
@@ -42,7 +42,7 @@ public class SensorArray
      *
      * @param yDistance y Distance (in mm) of system measured from center sensor to middle of wheels
      */
-    public void setYDistance(double yDistance) {
+    public void setYDistance(final double yDistance) {
         this.yDistance = yDistance;
     }
 
@@ -57,6 +57,15 @@ public class SensorArray
     }
 
     /**
+     * Returns the width of the sensor reading area (in mm)
+     *
+     * @param sensorWidth
+     */
+    public void setSensorWidth(final int sensorWidth) {
+        this.sensorWidth = sensorWidth;
+    }
+
+    /**
      * Returns the distance between two sensors (edge to edge). This value should be the distance that two sensors
      * detect the line (in mm)
      *
@@ -67,12 +76,17 @@ public class SensorArray
     }
 
     /**
+     * Sets distance where two sensors can detect the line at the same time. (in mm)
+     *
+     * @param sensorSpacing distance of overlapping sensor detection areas
+     */
+    public void setSensorSpacing(final int sensorSpacing) {
+        this.sensorSpacing = sensorSpacing;
+    }
+
+    /**
      * Sets the sensorState array based on the values of all LineSensors in the SensorArray.
      * Currently only setup for 3 sensors //TODO: make dynamic to the amount of sensors
-     *
-     * Throws a rideStop exception if all three sensors are reading the same value (+ or -)
-     *
-     * Throws an eStop exception if there is a catastrophic failure
      */
     public boolean[] readSensors() {
         for (int i = 0; i < sensorList.size(); i++) {
