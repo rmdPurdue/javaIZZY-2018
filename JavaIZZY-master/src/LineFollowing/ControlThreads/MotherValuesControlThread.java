@@ -30,7 +30,7 @@ public class MotherValuesControlThread implements Runnable {
     @Override
     public void run() {
         try {
-            InetAddress outgoingAddress = InetAddress.getByName("192.168.2.3");
+            InetAddress outgoingAddress = InetAddress.getByName("192.168.2.2");
             int outgoingPort = 8000;
             while (running.get()) {
                 try {
@@ -51,7 +51,6 @@ public class MotherValuesControlThread implements Runnable {
                     sender.send(outgoingMessage);
                     sender.close();
 
-                    System.out.println(sensorArray.readSensors()[0] + " " + sensorArray.readSensors()[1] + " " + sensorArray.readSensors()[2]);
                 } catch(Exception e) {
                     System.out.println(e.getMessage());
                     e.printStackTrace();
@@ -59,8 +58,9 @@ public class MotherValuesControlThread implements Runnable {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            System.out.println("The communication interface has stopped looping");
             e.printStackTrace();
+        } finally {
+            System.out.println("The communication interface has stopped looping");
         }
     }
 }

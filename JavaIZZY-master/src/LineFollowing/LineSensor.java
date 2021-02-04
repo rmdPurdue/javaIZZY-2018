@@ -54,5 +54,9 @@ public class LineSensor {
         return (getSensorReading() < getThreshold()); // is sensor reading (lower value = reading)
     }
 
+    public String getName() {
+        return analogInput.getName();
+    }
+
 }
 

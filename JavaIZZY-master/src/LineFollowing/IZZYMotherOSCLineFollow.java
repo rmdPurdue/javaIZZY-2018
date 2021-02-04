@@ -37,7 +37,7 @@ public class IZZYMotherOSCLineFollow extends IZZYMotherOSC {
     //Listen for StopProcessing Signal
     private final OSCListener stopProcessingListener = (time, motherMessage) -> {
         System.out.println("End Processing");
-
+        parseStopProcessing(motherMessage);
     };
     // Listen for eStop messages
     private final OSCListener eStopListener = (time, motherMessage) -> {

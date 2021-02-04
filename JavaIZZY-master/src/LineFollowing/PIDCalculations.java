@@ -128,7 +128,6 @@ public class PIDCalculations {
      */
     public double getErrorAngle() {
         //Math.atan returns in radians. We need degrees. Conversion: Radians * 180 / PI
-        System.out.println("Error Angle: " + (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI);
         return (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI;
     }
 

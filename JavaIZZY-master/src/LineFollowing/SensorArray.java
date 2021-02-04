@@ -90,7 +90,7 @@ public class SensorArray
      */
     public boolean[] readSensors() {
         for (int i = 0; i < sensorList.size(); i++) {
-            //System.out.println(sensorList.get(i).getAnalogInput().getName() + " = " + sensorList.get(i).getSensorReading());
+//            System.out.println(sensorList.get(i).getName() + " = " + sensorList.get(i).getSensorReading());
             signalArray[i] = sensorList.get(i).getSensorState(); //checks if wire is under sensor
         }
         return signalArray;

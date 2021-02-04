@@ -19,6 +19,7 @@ public class KangarooSerial implements AutoCloseable {
     private Serial serial;
     byte[] buffer;
     boolean open;
+    private ReadBackThread readBackThread;
 
     public KangarooSerial() {
         this.serial = SerialFactory.createInstance();
@@ -41,6 +42,9 @@ public class KangarooSerial implements AutoCloseable {
                 .parity(Parity.NONE)
                 .stopBits(StopBits._1)
                 .flowControl(FlowControl.NONE);
+
+//        readBackThread = new ReadBackThread(serial);
+//        new Thread(readBackThread).start();
     }
 
     public void open() {
@@ -100,6 +104,7 @@ public class KangarooSerial implements AutoCloseable {
     }
 
     public void write(KangarooSimpleChannel channel, String command) {
+        System.out.println(command);
         if(!open) {
             return;
         }
@@ -118,6 +123,38 @@ public class KangarooSerial implements AutoCloseable {
             //}
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+
+    private class ReadBackThread implements Runnable {
+        private Serial serial;
+
+        public ReadBackThread(Serial serial) {
+            this.serial = serial;
+        }
+
+        @Override
+        public void run() {
+            while(true) {
+                if(!open) {
+                    System.out.println("Port not open.");
+                }
+                try {
+                    byte[] data = this.serial.read();
+                    System.out.println("Received: ");
+                    for(byte datum : data) {
+                        System.out.print(datum + " ");
+                    }
+                    String dataString = new String(data);
+                    System.out.println("As string: " + dataString);
+                    System.out.println("debug ended");
+                    System.out.print(new String(data));
+                    System.out.println();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 

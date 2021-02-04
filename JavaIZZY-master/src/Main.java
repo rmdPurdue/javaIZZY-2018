@@ -51,11 +51,11 @@ public class Main {
         gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
 
         //Initialize sensors and map sensors to GPIO pins
-        LineSensor sensor1 = new LineSensor(15000, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor1 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Left
-        LineSensor sensor2 = new LineSensor(15000, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor2 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A1, "DistanceSensor-A1")); // Center
-        LineSensor sensor3 = new LineSensor(15000, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor3 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Right
 
         //Create array of mapped sensors

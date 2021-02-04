@@ -29,6 +29,6 @@ public class IZZYMoveLineFollow extends IZZYMove {
      */
     public void followLine(final int errorAngle, final int speed) {
         izzyMove(speed);
-        izzyTurn(errorAngle);
+        izzyTurn(-errorAngle);
     }
 }

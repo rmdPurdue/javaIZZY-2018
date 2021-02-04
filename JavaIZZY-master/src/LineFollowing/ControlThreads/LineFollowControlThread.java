@@ -49,6 +49,8 @@ public class LineFollowControlThread implements Runnable {
         } catch (final Exception e) {
             System.out.println("The control interface has stopped looping");
             e.printStackTrace();
+        } finally {
+            System.out.println("The control interface has stopped looping");
         }
     }
 }
