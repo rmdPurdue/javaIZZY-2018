@@ -179,4 +179,12 @@ public class OSCPortIn extends OSCPort implements Runnable {
 	public void addListener(final AddressSelector addressSelector, final OSCListener listener) {
 		dispatcher.addListener(addressSelector, listener);
 	}
+
+	public void removeListener(final String addressSelector, final OSCListener listener) {
+		this.removeListener(new OSCPatternAddressSelector(addressSelector), listener);
+	}
+
+	public void removeListener(final AddressSelector addressSelector, final OSCListener listener) {
+		dispatcher.removeListener(addressSelector, listener);
+	}
 }

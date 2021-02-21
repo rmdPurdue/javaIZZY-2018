@@ -43,6 +43,10 @@ public class OSCPacketDispatcher {
 		selectorToListener.put(addressSelector, listener);
 	}
 
+	public void removeListener(final AddressSelector addressSelector, final OSCListener listener) {
+		selectorToListener.remove(addressSelector);
+	}
+
 	public void dispatchPacket(final OSCPacket packet) {
 		dispatchPacket(packet, null);
 	}
