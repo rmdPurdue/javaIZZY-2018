@@ -101,8 +101,9 @@ public class OSCPortIn extends OSCPort implements Runnable {
 		final byte[] buffer = new byte[BUFFER_SIZE];
 		final DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 		final DatagramSocket socket = getSocket();
-		while (listening) {
-			try {
+		try {
+			while (listening) {
+
 				try {
 					socket.receive(packet);
 				} catch (SocketException ex) {
@@ -111,15 +112,15 @@ public class OSCPortIn extends OSCPort implements Runnable {
 					} else {
 						// if we closed the socket while receiving data,
 						// the exception is expected/normal, so we hide it
-						continue;
+						break;
 					}
 				}
 				final OSCPacket oscPacket = converter.convert(buffer,
 						packet.getLength());
 				dispatcher.dispatchPacket(oscPacket);
-			} catch (IOException ex) {
-				ex.printStackTrace(); // XXX This may not be a good idea, as this could easily lead to a never ending series of exceptions thrown (due to the non-exited while loop), and because the user of the lib may want to handle this case himself
 			}
+		} catch (IOException ex) {
+			ex.printStackTrace(); // XXX This may not be a good idea, as this could easily lead to a never ending series of exceptions thrown (due to the non-exited while loop), and because the user of the lib may want to handle this case himself
 		}
 	}
 

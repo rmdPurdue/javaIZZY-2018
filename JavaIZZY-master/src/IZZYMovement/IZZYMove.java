@@ -62,7 +62,6 @@ public class IZZYMove {
     public void izzyMove(int speed) {
         this.driveSpeed = speed;
         this.D.S(this.driveSpeed);
-        this.D.getS();
     }
 
     /**

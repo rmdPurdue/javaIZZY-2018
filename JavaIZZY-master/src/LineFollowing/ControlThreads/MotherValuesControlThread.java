@@ -11,28 +11,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class MotherValuesControlThread implements Runnable {
 
-    private final AtomicBoolean running;
+    private final AtomicBoolean isRunning;
     private final AtomicInteger speed;
     private final PIDCalculations pidCalculations;
-    private final AtomicBoolean moving;
+    private final AtomicBoolean isMoving;
     private final SensorArray sensorArray;
 
     public MotherValuesControlThread(final AtomicBoolean running, final AtomicInteger speed,
                                      final PIDCalculations pidCalculations, final AtomicBoolean moving,
                                      final SensorArray sensorArray) {
-        this.running = running;
+        this.isRunning = running;
         this.speed = speed;
         this.pidCalculations = pidCalculations;
-        this.moving = moving;
+        this.isMoving = moving;
         this.sensorArray = sensorArray;
     }
 
     @Override
     public void run() {
         try {
-            InetAddress outgoingAddress = InetAddress.getByName("192.168.2.2");
+            InetAddress outgoingAddress = InetAddress.getByName("192.168.2.3");
             int outgoingPort = 8000;
-            while (running.get()) {
+            while (isRunning.get()) {
                 try {
                     OSCMessage outgoingMessage = new OSCMessage();
                     outgoingMessage.setAddress("/IZZYMother/Status");
@@ -42,7 +42,7 @@ public class MotherValuesControlThread implements Runnable {
                     outgoingMessage.addArgument(pidCalculations.getKp());
                     outgoingMessage.addArgument(pidCalculations.getKi());
                     outgoingMessage.addArgument(pidCalculations.getKd());
-                    outgoingMessage.addArgument(moving.get());
+                    outgoingMessage.addArgument(isMoving.get());
                     outgoingMessage.addArgument("Not Implemented");
                     outgoingMessage.addArgument(sensorArray.readSensors()[0]);
                     outgoingMessage.addArgument(sensorArray.readSensors()[1]);
@@ -50,7 +50,6 @@ public class MotherValuesControlThread implements Runnable {
                     OSCPortOut sender = new OSCPortOut(outgoingAddress, outgoingPort);
                     sender.send(outgoingMessage);
                     sender.close();
-
                 } catch(Exception e) {
                     System.out.println(e.getMessage());
                     e.printStackTrace();

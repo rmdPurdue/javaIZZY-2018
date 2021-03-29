@@ -141,14 +141,14 @@ public class KangarooSerial implements AutoCloseable {
             try {
                 byte[] data = this.serial.read();
                 System.out.println("Received: ");
-                for(byte datum : data) {
-                    System.out.println(datum + " : " + Integer.toBinaryString((int)datum));
-                }
+//                for(byte datum : data) {
+//                    System.out.println(datum + " : " + Integer.toBinaryString((int)datum));
+//                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
             byte word;
-            System.out.println("Offset: " + this.bufferOffset + " Length: " + this.bufferLength);
+            //System.out.println("Offset: " + this.bufferOffset + " Length: " + this.bufferLength);
             if(this.bufferOffset < this.bufferLength) {
                 word = this.buffer[this.bufferOffset++];
                 System.out.println("Got this: " + word);

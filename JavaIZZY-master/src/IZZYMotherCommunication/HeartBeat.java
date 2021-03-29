@@ -1,13 +1,12 @@
-package comm;
+package IZZYMotherCommunication;
 
 import Devices.IZZY;
 import java.io.IOException;
 import java.net.*;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import static comm.MessageType.*;
-import static comm.PortEnumerations.*;
+import static IZZYMotherCommunication.MessageType.*;
+import static IZZYMotherCommunication.PortEnumerations.*;
 
 /**
  * @author Rich Dionne
@@ -17,21 +16,22 @@ import static comm.PortEnumerations.*;
  */
 public class HeartBeat implements Runnable {
 
-    public interface HeartBeatListener {
-        void onHeartBeatReceived();
-
-        void onIntervalTimeOut();
-    }
-
     private HeartBeatListener listener;
-    private MulticastSocket listenerSocket = new MulticastSocket(UDP_RECEIVE_PORT.getValue());
-    private DatagramSocket responseSocket = new DatagramSocket();
-    private AtomicBoolean running = new AtomicBoolean(false);
-    private IZZY izzy = null;
-    private long lastHeartBeatTime = 0;
+    private final MulticastSocket listenerSocket;
+    private final DatagramSocket responseSocket;
+    private final AtomicBoolean running;
+    private final AtomicBoolean heartBeating;
+    private final IZZY izzy;
+    private long lastHeartBeatTime;
 
-    public HeartBeat(IZZY izzy) throws IOException {
+    public HeartBeat(final IZZY izzy, final AtomicBoolean running, final AtomicBoolean heartBeating) throws IOException {
+        this.listener = null;
+        this.listenerSocket = new MulticastSocket(UDP_RECEIVE_PORT.getValue());
+        this.responseSocket = new DatagramSocket();
+        this.running = running;
+        this.heartBeating = heartBeating;
         this.izzy = izzy;
+        this.lastHeartBeatTime = 0;
     }
 
     public void setListener(HeartBeatListener listener) {
@@ -47,8 +47,6 @@ public class HeartBeat implements Runnable {
 
     @Override
     public void run() {
-        running.set(true);
-
         InetAddress group;
 
         try {
@@ -56,13 +54,18 @@ public class HeartBeat implements Runnable {
             listenerSocket.joinGroup(group);
         } catch (IOException e) {
             e.printStackTrace();
+            heartBeating.set(false);
+            return;
         }
 
         lastHeartBeatTime = System.currentTimeMillis();
 
         while(running.get()) {
+            System.out.println("Listening");
             listenForHeartbeat();
         }
+        heartBeating.set(false);
+        System.out.println("WE FINISHED");
     }
 
     private void listenForHeartbeat() {
@@ -70,7 +73,7 @@ public class HeartBeat implements Runnable {
 
         DatagramPacket receivedPacket = new DatagramPacket(buf, buf.length);
         try {
-            listenerSocket.receive(receivedPacket);
+           listenerSocket.receive(receivedPacket);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,6 +97,7 @@ public class HeartBeat implements Runnable {
                         break;
                 }
             } else {
+                heartBeating.set(false);
                 listener.onIntervalTimeOut();
             }
             lastHeartBeatTime = System.currentTimeMillis();

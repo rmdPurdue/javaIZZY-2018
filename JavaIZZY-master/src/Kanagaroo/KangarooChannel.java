@@ -211,7 +211,7 @@ public class KangarooChannel {
 
     public KangarooError start() {
         KangarooCommandWriter contents = new KangarooCommandWriter();
-        System.out.println("start command number: " + KangarooCommand.START.getValue());
+        //System.out.println("start command number: " + KangarooCommand.START.getValue());
         return set(KangarooCommand.START.getValue(), contents).status().getError();
     }
 
@@ -255,7 +255,7 @@ public class KangarooChannel {
         KangarooMonitor monitor = new KangarooMonitor(this);
 
         if(streaming) {
-            System.out.println("Sending streaming.");
+            //System.out.println("Sending streaming.");
             setNoReply(command, contents, moveFlags);
             this.monitor = null;
         } else {

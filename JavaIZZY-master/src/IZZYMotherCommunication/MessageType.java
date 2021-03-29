@@ -1,4 +1,4 @@
-package comm;
+package IZZYMotherCommunication;
 
 /**
  * @author Rich Dionne
@@ -9,6 +9,7 @@ package comm;
 public enum MessageType {
     HELLO ((byte)0x01),
     HERE ((byte)0x02),
+    SETUP_ERROR((byte)0x03),
     MOVING ((byte)0x04),
     NOT_VALID((byte)0x00);
 

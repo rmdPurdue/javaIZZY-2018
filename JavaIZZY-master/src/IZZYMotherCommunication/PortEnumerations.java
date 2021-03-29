@@ -1,4 +1,4 @@
-package comm;
+package IZZYMotherCommunication;
 
 /**
  * @author Rich Dionne

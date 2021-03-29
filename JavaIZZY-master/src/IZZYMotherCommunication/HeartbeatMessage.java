@@ -1,4 +1,4 @@
-package comm;
+package IZZYMotherCommunication;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

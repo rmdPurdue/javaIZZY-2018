@@ -1,3 +1,6 @@
+import Devices.IZZY;
+import IZZYMotherCommunication.HeartBeat;
+import IZZYMotherCommunication.HeartBeatListener;
 import KangarooSimpleSerial.KangarooSerial;
 import KangarooSimpleSerial.KangarooSimpleChannel;
 import LineFollowing.*;
@@ -24,9 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Main {
 
-    private static AtomicInteger speed;
-    private static AtomicBoolean moving;
-    private static AtomicBoolean running;
+    private static AtomicInteger speedValue;
+    private static AtomicBoolean isMoving;
+    private static AtomicBoolean isRunning;
+    private static AtomicBoolean isHeartBeating;
     private static PIDCalculations pidCalculations;
     private static IZZYMoveLineFollow izzyMove;
     private static IZZYMotherOSCLineFollow izzyMotherOSCLineFollow;
@@ -34,21 +38,54 @@ public class Main {
     private static KangarooSerial kangaroo;
     private static KangarooSimpleChannel D;
     private static KangarooSimpleChannel T;
+    private static IZZY izzy;
 
-    public static void main(String[] args) throws InterruptedException, UnsupportedBusNumberException, IOException {
+    public static void main(String[] args) {
 
-        // set default values for static variables.
-        running = new AtomicBoolean(true); // set to false stops all loops and ends program
-        moving = new AtomicBoolean(false); // IZZY's current motion state
-        speed = new AtomicInteger(0); // IZZY's current speed value
+        // set default values for static indicator variables.
+        isRunning = new AtomicBoolean(true); // set to false stops all loops and ends program
+        isMoving = new AtomicBoolean(false); // IZZY's current motion state
+        isHeartBeating = new AtomicBoolean(false); //IZZY and Mother Connection Status Verifier
+        speedValue = new AtomicInteger(0); // IZZY's current speed value (mm/sec)
+
+        //create IZZY object (mainly for heartbeat)
+        izzy = new IZZY("mini-IZZY", 500);
+
+        //setup heartbeat
+        try {
+            HeartBeat heartBeat = new HeartBeat(izzy, isRunning, isHeartBeating);
+            heartBeat.setListener(new HeartBeatListener() {
+                @Override
+                public void onHeartBeatReceived() {
+                    isHeartBeating.set(true);
+                }
+                @Override
+                public void onIntervalTimeOut() {
+                    isHeartBeating.set(false);
+                }
+            });
+            Thread heartBeatLoop = new Thread(heartBeat);
+            heartBeatLoop.start();
+        } catch (Exception e) {
+            System.out.println("Unsafe Operation. Could not setup heartbeat.");
+            e.printStackTrace();
+            return;
+        }
 
         // create gpio controller
         final GpioController gpio = GpioFactory.getInstance();
+        final ADS1115GpioProvider gpioProvider;
 
-        // create custom ADS1115 GPIO provider
-        final ADS1115GpioProvider gpioProvider = new ADS1115GpioProvider(I2CBus.BUS_1,
-                ADS1115GpioProvider.ADS1115_ADDRESS_0x49);
-        gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
+        try {
+            // create custom ADS1115 GPIO provider
+            gpioProvider = new ADS1115GpioProvider(I2CBus.BUS_1,
+                    ADS1115GpioProvider.ADS1115_ADDRESS_0x49);
+            gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
+        } catch (Exception e) {
+            System.out.println("Invalid Operation. Could not setup GPIO.");
+            e.printStackTrace();
+            return;
+        }
 
         //Initialize sensors and map sensors to GPIO pins
         LineSensor sensor1 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
@@ -76,26 +113,37 @@ public class Main {
         //Create LineFollowing.PIDControl to monitor sensors and automate movement
         pidCalculations = new PIDCalculations(1, 1, 1, sensorArray);
 
-        //Create OSC communication object to listen for mother
-        izzyMotherOSCLineFollow = new IZZYMotherOSCLineFollow(moving, speed, pidCalculations, running, D, T);
-
+        try {
+            //Create OSC communication object to listen for mother
+            izzyMotherOSCLineFollow = new IZZYMotherOSCLineFollow(isMoving, speedValue, pidCalculations, isRunning, D, T);
+        } catch (Exception e) {
+            System.out.println("Invalid Operation. Could not create Mother OSC object.");
+            e.printStackTrace();
+            return;
+        }
         // Start listening for mother commands
         izzyMotherOSCLineFollow.startListening();
 
         // Creates thread to handle line follow control
-        Thread lineFollowLoop = new Thread(new LineFollowControlThread(running, pidCalculations, sensorArray, moving, izzyMove,
-                                            speed));
+        Thread lineFollowLoop = new Thread(new LineFollowControlThread(isRunning, pidCalculations, sensorArray, isMoving, izzyMove,
+                speedValue, isHeartBeating));
 
         // Create thread to handle mother value updates (sending messages to mother)
-        Thread motherUpdateLoop = new Thread(new MotherValuesControlThread(running, speed, pidCalculations, moving, sensorArray));
+        Thread motherUpdateLoop = new Thread(new MotherValuesControlThread(isRunning, speedValue, pidCalculations, isMoving, sensorArray));
 
         //Start loops
         lineFollowLoop.start();
         motherUpdateLoop.start();
 
-        //When loops exit, program stops
-        lineFollowLoop.join();
-        motherUpdateLoop.join();
+        try {
+            //When loops exit, program stops
+            lineFollowLoop.join();
+            motherUpdateLoop.join();
+        } catch (Exception e) {
+            System.out.println("Critical Error. Could not close control threads. Power down IZZY.");
+            e.printStackTrace();
+            return;
+        }
 
         //Closes the receiver port to free up for next use
         izzyMotherOSCLineFollow.close();
