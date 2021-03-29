@@ -82,13 +82,14 @@ public class KangarooSerial implements AutoCloseable {
                 return false;
             }
             try {
+                System.out.println("TRY RECEIVED PACKET");
                 byte[] data = this.serial.read();
-                System.out.print("Received: ");
-                for(byte datum : data) {
-                    System.out.print(datum + " ");
-                }
-                System.out.println("debug ended");
-                System.out.print("As string: " + new String(data));
+                //System.out.print("Received: ");
+//                for(byte datum : data) {
+//                    System.out.print(datum + " ");
+//                }
+                //System.out.println("debug ended");
+                //System.out.print("As string: " + new String(data));
                 return true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -102,11 +103,11 @@ public class KangarooSerial implements AutoCloseable {
             return;
         }
         String commandToSend = channel.getName() + "," + command;
-        System.out.println("Sending: " + commandToSend);
+        //System.out.println("Sending: " + commandToSend);
         byte[] data = commandToSend.getBytes();
-        for(byte datum : data) {
-            System.out.println(datum);
-        }
+//        for(byte datum : data) {
+//            System.out.println(datum);
+//        }
         try {
             serial.write(data);
             if(command.toLowerCase().contains("get".toLowerCase())) {

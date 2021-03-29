@@ -1,9 +1,5 @@
 package Devices;
 
-import KangarooSimpleSerial.KangarooSerial;
-import KangarooSimpleSerial.KangarooSimpleChannel;
-import util.IZZYStatus;
-
 import java.net.InetAddress;
 import java.util.UUID;
 
@@ -14,20 +10,24 @@ import java.util.UUID;
  * @date 12/6/2018
  */
 public class IZZY {
-
-    private String name = null;
-    private InetAddress ipAddress = null;
-    private UUID myUUID = UUID.fromString("b7a5fbe1-6c7e-4dbe-ad13-42f0b2c60d29");
-    private KangarooSerial kangarooSerial = null;
-    private IZZYStatus status = null;
-    private int heartbeatInterval = 250;
+    private final UUID uuid;
+    private String name;
+    private InetAddress ipAddress;
+    private int heartbeatInterval;
     private long lastHeartbeatTime;
-    private Mother mother = null;
+    private Mother mother;
 
-    public IZZY() {
-        kangarooSerial = new KangarooSerial();
-        status = IZZYStatus.AVAILABLE;
-        mother = new Mother();
+    public IZZY(final String name, final int heartbeatInterval) {
+        this.uuid = UUID.randomUUID();
+        this.name = name;
+        this.ipAddress = null;
+        this.heartbeatInterval = heartbeatInterval;
+        this.lastHeartbeatTime = 0;
+        this.mother = new Mother();
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     public String getName() {
@@ -46,22 +46,6 @@ public class IZZY {
         this.ipAddress = ipAddress;
     }
 
-    public UUID getUUID() {
-        return myUUID;
-    }
-
-    public KangarooSerial getKangarooSerial() {
-        return kangarooSerial;
-    }
-
-    public void setStatus(IZZYStatus status) {
-        this.status = status;
-    }
-
-    public IZZYStatus getStatus() {
-        return status;
-    }
-
     public int getHeartbeatInterval() {
         return heartbeatInterval;
     }
@@ -78,11 +62,11 @@ public class IZZY {
         this.lastHeartbeatTime = lastHeartbeatTime;
     }
 
-    public void setMother(Mother mother) {
-        this.mother = mother;
-    }
-
     public Mother getMother() {
         return mother;
+    }
+
+    public void setMother(Mother mother) {
+        this.mother = mother;
     }
 }

@@ -70,7 +70,7 @@ public class KangarooCommandWriter {
         int i = offset;
         //System.out.println(address);
         this.buffer[i++] = (byte)( address & 0xFF);
-        System.out.println(this.buffer[0]);
+        //System.out.println(this.buffer[0]);
         this.buffer[i++] = (byte)command;
         this.buffer[i++] = (byte)lengthOfData;
         for(byte j = 0; j < lengthOfData; j++) {
@@ -94,7 +94,7 @@ public class KangarooCommandWriter {
 //        System.out.println("Address: " + address + " Address in buffer: " + buffer[0]);
         for(int i = 0; i < lengthOfBuffer; i ++){
             try {
-                System.out.println("buffer[" + i + "]: " + this.buffer[i]);
+                //System.out.println("buffer[" + i + "]: " + this.buffer[i]);
                 serial.write(this.buffer[i]);
             } catch (IOException e) {
                 e.printStackTrace();
