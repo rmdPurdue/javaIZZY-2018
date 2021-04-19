@@ -16,56 +16,49 @@ import static IZZYMotherCommunication.PortEnumerations.*;
  */
 public class HeartBeat implements Runnable {
 
-    private HeartBeatListener listener;
-    private final MulticastSocket listenerSocket;
-    private final DatagramSocket responseSocket;
-    private final AtomicBoolean running;
-    private final AtomicBoolean heartBeating;
-    private final IZZY izzy;
-    private long lastHeartBeatTime;
+    private final MulticastSocket listenerSocket; // MulticastSocket to listen for IZZYMother HeartbeatSender
+    private final DatagramSocket responseSocket; // DatagramSocket to respond to IZZYMother
+    private final InetAddress multicastAddress; // Multicast IP address to join
+    private final AtomicBoolean isRunning; // Is IZZY supposed to be running
+    private final AtomicBoolean isHeartBeating; // Is IZZY hearing mother's heartbeat
+    private final IZZY izzy; // attributes to identify IZZY
 
-    public HeartBeat(final IZZY izzy, final AtomicBoolean running, final AtomicBoolean heartBeating) throws IOException {
-        this.listener = null;
+    public HeartBeat(final IZZY izzy, final AtomicBoolean isRunning, final AtomicBoolean isHeartBeating) throws IOException {
         this.listenerSocket = new MulticastSocket(UDP_RECEIVE_PORT.getValue());
-        this.responseSocket = new DatagramSocket();
-        this.running = running;
-        this.heartBeating = heartBeating;
+        this.responseSocket = new DatagramSocket(UDP_SEND_PORT.getValue()); // the only purpose of specifying a port is so we can manually allow it through the firewall if needed
+        this.multicastAddress = InetAddress.getByName("239.0.0.57");
+        this.isRunning = isRunning;
+        this.isHeartBeating = isHeartBeating;
         this.izzy = izzy;
-        this.lastHeartBeatTime = 0;
-    }
-
-    public void setListener(HeartBeatListener listener) {
-        this.listener = listener;
     }
 
     public void stopBeating() {
-        running.set(false);
-        listenerSocket.close();
-        responseSocket.close();
+        isHeartBeating.set(false);
+        try {
+            listenerSocket.leaveGroup(multicastAddress);
+            listenerSocket.close();
+            responseSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Thread.currentThread().interrupt();
     }
 
     @Override
     public void run() {
-        InetAddress group;
-
         try {
-            group = InetAddress.getByName("239.0.0.57");
-            listenerSocket.joinGroup(group);
+            listenerSocket.joinGroup(multicastAddress);
+            listenerSocket.setSoTimeout(izzy.getHeartbeatInterval());
         } catch (IOException e) {
             e.printStackTrace();
-            heartBeating.set(false);
             return;
         }
 
-        lastHeartBeatTime = System.currentTimeMillis();
-
-        while(running.get()) {
-            System.out.println("Listening");
+        while(isRunning.get()) {
+            System.out.print("*");
             listenForHeartbeat();
         }
-        heartBeating.set(false);
-        System.out.println("WE FINISHED");
+        stopBeating();
     }
 
     private void listenForHeartbeat() {
@@ -74,33 +67,28 @@ public class HeartBeat implements Runnable {
         DatagramPacket receivedPacket = new DatagramPacket(buf, buf.length);
         try {
            listenerSocket.receive(receivedPacket);
+        } catch (SocketTimeoutException timeout) {
+            isHeartBeating.set(false);
+            //TODO: Check how long it has been since heartbeat
+            System.out.print("X");
+            return;
         } catch (IOException e) {
             e.printStackTrace();
+            return;
         }
 
         InetAddress packetAddress = receivedPacket.getAddress();
 
-        HeartbeatMessage message;
-
         try {
-            message = new HeartbeatMessage(Arrays.copyOfRange(receivedPacket.getData(), 0, receivedPacket.getLength()));
-            if(System.currentTimeMillis() - lastHeartBeatTime <= izzy.getHeartbeatInterval()) {
-                switch (getMessageType(message.getMessageType())) {
-                    case HELLO:
-                        izzy.getMother().setIpAddress(packetAddress);
-                        izzy.getMother().setUUID(message.getSenderUUID());
-                        respond();
-                        listener.onHeartBeatReceived();
-                        lastHeartBeatTime = System.currentTimeMillis();
-                        break;
-                    case NOT_VALID:
-                        break;
-                }
+            HeartbeatMessage message = new HeartbeatMessage(Arrays.copyOfRange(receivedPacket.getData(), 0, receivedPacket.getLength()));
+            if (getMessageType(message.getMessageType()) == HELLO) {
+                izzy.getMother().setIpAddress(packetAddress); //TODO: Once set, needs to be permanent?
+                izzy.getMother().setUUID(message.getSenderUUID()); //TODO: Once set, needs to be permanent?
+                isHeartBeating.set(true);
+                respond();
             } else {
-                heartBeating.set(false);
-                listener.onIntervalTimeOut();
+                throw new IllegalArgumentException();
             }
-            lastHeartBeatTime = System.currentTimeMillis();
         } catch (IllegalArgumentException e) {
             System.out.println("Not a valid message.");
         } catch (IOException e) {
@@ -109,11 +97,9 @@ public class HeartBeat implements Runnable {
     }
 
     private void respond() throws IOException {
-        //System.out.println("Sent response.");
-        HeartbeatMessage message = new HeartbeatMessage();
+        HeartbeatMessage message = new HeartbeatMessage(HERE.getValue());
         message.setSenderUUID(izzy.getUUID());
-        message.setMessageType(HERE.getValue());
-        message.setData(izzy.getName().getBytes());
+        message.setData(izzy.getName().getBytes()); //TODO: Izzy doesn't need to know her name. We can send errors here
         DatagramPacket responsePacket = new DatagramPacket(message.getMessage(), message.getMessage().length, izzy.getMother().getIpAddress(), UDP_SEND_PORT.getValue());
         responseSocket.send(responsePacket);
     }
