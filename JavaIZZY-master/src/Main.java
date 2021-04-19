@@ -1,10 +1,8 @@
 import Devices.IZZY;
 import IZZYMotherCommunication.HeartBeat;
-import IZZYMotherCommunication.HeartBeatListener;
 import KangarooSimpleSerial.KangarooSerial;
 import KangarooSimpleSerial.KangarooSimpleChannel;
 import LineFollowing.*;
-import java.io.IOException;
 
 import LineFollowing.ControlThreads.LineFollowControlThread;
 import LineFollowing.ControlThreads.MotherValuesControlThread;
@@ -14,7 +12,6 @@ import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifier
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
-import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,6 +38,7 @@ public class Main {
     private static IZZY izzy;
 
     public static void main(String[] args) {
+        System.out.println("Hello From IZZY!");
 
         // set default values for static indicator variables.
         isRunning = new AtomicBoolean(true); // set to false stops all loops and ends program
@@ -54,18 +52,9 @@ public class Main {
         //setup heartbeat
         try {
             HeartBeat heartBeat = new HeartBeat(izzy, isRunning, isHeartBeating);
-            heartBeat.setListener(new HeartBeatListener() {
-                @Override
-                public void onHeartBeatReceived() {
-                    isHeartBeating.set(true);
-                }
-                @Override
-                public void onIntervalTimeOut() {
-                    isHeartBeating.set(false);
-                }
-            });
             Thread heartBeatLoop = new Thread(heartBeat);
             heartBeatLoop.start();
+            heartBeatLoop.join();
         } catch (Exception e) {
             System.out.println("Unsafe Operation. Could not setup heartbeat.");
             e.printStackTrace();
