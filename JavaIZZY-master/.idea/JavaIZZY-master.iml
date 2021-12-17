@@ -7,8 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="org.apache.logging.log4j:log4j-api:2.14.1" level="project" />
-    <orderEntry type="library" name="org.apache.logging.log4j:log4j-core:2.14.1" level="project" />
-    <orderEntry type="library" name="com.google.dagger:dagger:2.38.1" level="project" />
+    <orderEntry type="library" name="pi4j.gpio.extension2" level="project" />
+    <orderEntry type="library" name="pi4j.core2" level="project" />
   </component>
 </module>

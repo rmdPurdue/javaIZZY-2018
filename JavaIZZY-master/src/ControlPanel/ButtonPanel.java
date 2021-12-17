@@ -1,10 +1,8 @@
 package ControlPanel;
 
 import com.pi4j.io.gpio.*;
-import util.ControlModeFlag;
 
-import static util.ControlModeFlag.*;
-
+import static ControlPanel.ControlModeFlag.*;
 
 /**
  * @author Rich Dionne

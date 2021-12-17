@@ -1,11 +1,16 @@
-import Devices.IZZY;
-import IZZYMotherCommunication.HeartBeat;
-import KangarooSimpleSerial.KangarooSerial;
-import KangarooSimpleSerial.KangarooSimpleChannel;
-import LineFollowing.*;
+import Hardware.LineFollowing.LineSensor;
+import Hardware.LineFollowing.SensorArray;
+import MotherCommunication.Heartbeat.HeartbeatResponder;
+import MotherCommunication.Heartbeat.MessageType;
+import MotherCommunication.LineFollowing.IZZYOSCReceiverLineFollow;
+import MotherCommunication.LineFollowing.IZZYOSCSenderLineFollow;
+import Movement.LineFollowing.IZZYMoveLineFollow;
+import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSerial;
+import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSimpleChannel;
 
-import LineFollowing.ControlThreads.LineFollowControlThread;
-import LineFollowing.ControlThreads.MotherValuesControlThread;
+import ControlThreads.LineFollowControlThread;
+import ControlThreads.MotherValuesControlThread;
+import ObstacleDetection.ObstacleDetectionController;
 import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
 import com.pi4j.gpio.extension.ads.ADS1115Pin;
 import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifierValue;
@@ -13,8 +18,8 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Rich Dionne
@@ -24,37 +29,31 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class Main {
 
-    private static AtomicInteger speedValue;
-    private static AtomicBoolean isMoving;
     private static AtomicBoolean isRunning;
-    private static AtomicBoolean isHeartBeating;
-    private static PIDCalculations pidCalculations;
     private static IZZYMoveLineFollow izzyMove;
-    private static IZZYMotherOSCLineFollow izzyMotherOSCLineFollow;
+    private static AtomicBoolean dangerApproaching;
+    private static IZZYOSCReceiverLineFollow IZZYOSCReceiverLineFollow;
+    private static IZZYOSCSenderLineFollow IZZYOSCSenderLineFollow;
+    private static HeartbeatResponder heartBeat;
     private static SensorArray sensorArray;
     private static KangarooSerial kangaroo;
     private static KangarooSimpleChannel D;
     private static KangarooSimpleChannel T;
-    private static IZZY izzy;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("Hello From IZZY!");
 
-        // set default values for static indicator variables.
+        // Create single breaking point to halt all processing
         isRunning = new AtomicBoolean(true); // set to false stops all loops and ends program
-        isMoving = new AtomicBoolean(false); // IZZY's current motion state
-        isHeartBeating = new AtomicBoolean(false); //IZZY and Mother Connection Status Verifier
-        speedValue = new AtomicInteger(0); // IZZY's current speed value (mm/sec)
 
-        //create IZZY object (mainly for heartbeat)
-        izzy = new IZZY("mini-IZZY", 500);
-
-        //setup heartbeat
+        // Setup Heartbeat
         try {
-            HeartBeat heartBeat = new HeartBeat(izzy, isRunning, isHeartBeating);
+            heartBeat = new HeartbeatResponder(isRunning);
             Thread heartBeatLoop = new Thread(heartBeat);
             heartBeatLoop.start();
-            heartBeatLoop.join();
+            while(!heartBeat.isHeartbeating()) {
+                Thread.sleep(1000);
+            }
         } catch (Exception e) {
             System.out.println("Unsafe Operation. Could not setup heartbeat.");
             e.printStackTrace();
@@ -71,17 +70,17 @@ public class Main {
                     ADS1115GpioProvider.ADS1115_ADDRESS_0x49);
             gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
         } catch (Exception e) {
-            System.out.println("Invalid Operation. Could not setup GPIO.");
-            e.printStackTrace();
+            heartBeat.setErrorMessage("Invalid Operation. Could not setup GPIO.");
+            heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
         }
 
         //Initialize sensors and map sensors to GPIO pins
-        LineSensor sensor1 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor1 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Left
-        LineSensor sensor2 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor2 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A1, "DistanceSensor-A1")); // Center
-        LineSensor sensor3 = new LineSensor(17200, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor3 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Right
 
         //Create array of mapped sensors
@@ -96,62 +95,70 @@ public class Main {
         D = new KangarooSimpleChannel(kangaroo, 'D'); // drive channel. forward and backward speed
         T = new KangarooSimpleChannel(kangaroo, 'T'); // turn channel. rotation angle
 
-        //Create IZZYMovement.IZZYMove to control mini IZZY's movement
-        izzyMove = new IZZYMoveLineFollow(D, T, 31.75, 69.5, 16, 120);
+        // Create boolean to detect if danger is approaching
+        dangerApproaching = new AtomicBoolean(false);
 
-        //Create LineFollowing.PIDControl to monitor sensors and automate movement
-        pidCalculations = new PIDCalculations(1, 1, 1, sensorArray);
+        //Create Movement controller to control mini IZZY's movement
+        izzyMove = new IZZYMoveLineFollow(D, T, sensorArray, 67.3, 124.5, 20, 100, dangerApproaching);
 
         try {
-            //Create OSC communication object to listen for mother
-            izzyMotherOSCLineFollow = new IZZYMotherOSCLineFollow(isMoving, speedValue, pidCalculations, isRunning, D, T);
+            //Create OSC communication object to listen for  commands
+            IZZYOSCReceiverLineFollow = new IZZYOSCReceiverLineFollow(isRunning, izzyMove);
         } catch (Exception e) {
-            System.out.println("Invalid Operation. Could not create Mother OSC object.");
-            e.printStackTrace();
+            heartBeat.setErrorMessage("Invalid Operation. Could not create Mother Receiver OSC object.");
+            heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
         }
-        // Start listening for mother commands
-        izzyMotherOSCLineFollow.startListening();
 
-        // Creates thread to handle line follow control
-        Thread lineFollowLoop = new Thread(new LineFollowControlThread(isRunning, pidCalculations, sensorArray, isMoving, izzyMove,
-                speedValue, isHeartBeating));
+        try {
+            // Creates Mother OSC sender controller to manage the data values sent to mother
+            IZZYOSCSenderLineFollow = new IZZYOSCSenderLineFollow(izzyMove, heartBeat);
+        } catch (Exception e) {
+            heartBeat.setErrorMessage("Invalid Operation. Could not create Mother Sender OSC object.");
+            heartBeat.setMessageType(MessageType.SETUP_ERROR);
+            return;
+        }
 
         // Create thread to handle mother value updates (sending messages to mother)
-        Thread motherUpdateLoop = new Thread(new MotherValuesControlThread(isRunning, speedValue, pidCalculations, isMoving, sensorArray));
+        Thread motherUpdateLoop = new Thread(new MotherValuesControlThread(isRunning, IZZYOSCSenderLineFollow,
+                heartBeat));
+
+        // Creates thread to handle line follow control
+        Thread lineFollowLoop = new Thread(new LineFollowControlThread(isRunning, izzyMove, heartBeat,
+                IZZYOSCSenderLineFollow));
+
+        // Start listening for mother commands
+        IZZYOSCReceiverLineFollow.startListening();
+
+
+        ObstacleDetectionController obstacleDetectionController;
+        try {
+            obstacleDetectionController = new ObstacleDetectionController(isRunning, izzyMove, dangerApproaching);
+        } catch (Exception e) {
+            heartBeat.setErrorMessage("Invalid Operation. Could not create Mother Sender OSC object.");
+            heartBeat.setMessageType(MessageType.SETUP_ERROR);
+            return;
+        }
+        Thread obstacleDetectionLoop = new Thread(obstacleDetectionController);
 
         //Start loops
         lineFollowLoop.start();
         motherUpdateLoop.start();
+        obstacleDetectionLoop.start();
 
         try {
             //When loops exit, program stops
             lineFollowLoop.join();
             motherUpdateLoop.join();
+            obstacleDetectionLoop.join();
         } catch (Exception e) {
-            System.out.println("Critical Error. Could not close control threads. Power down IZZY.");
-            e.printStackTrace();
+            heartBeat.setErrorMessage("Critical Error. Could not close control threads. Power down IZZY.");
+            heartBeat.setMessageType(MessageType.BROKEN);
             return;
         }
 
         //Closes the receiver port to free up for next use
-        izzyMotherOSCLineFollow.close();
+        IZZYOSCReceiverLineFollow.close();
 
     }
-
-//    private static void parseOSC(OSCMessage msg, IZZYMovement.IZZYPosition IZZYPos){
-//        List<Object> msgArgs = msg.getArguments();
-//        if (msg.getAddress() == "/IZZY/SimpleMove") {
-//            System.out.println("calculating move");
-//            IZZYPos.izzySimpleMove((int) msgArgs.get(0), (int) msgArgs.get(1), (int) msgArgs.get(2), 0);
-//            /*if((int)msgArgs.get(0) == 0){
-//                IZZYPos.T.P((int) msgArgs.get(1));
-//            }
-//            else{
-//                IZZYPos.D.P((int) msgArgs.get(0));
-//            }*/
-//            //IZZYPos.T.P((int) msgArgs.get(1));
-//            //IZZYPos.D.getP();
-//        }
-//    }
 }

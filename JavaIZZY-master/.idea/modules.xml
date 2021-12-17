@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/JavaIZZY.iml" filepath="$PROJECT_DIR$/JavaIZZY.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/JavaIZZY-master.iml" filepath="$PROJECT_DIR$/.idea/JavaIZZY-master.iml" />
     </modules>
   </component>
 </project>

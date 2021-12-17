@@ -1,0 +1,20 @@
+<component name="libraryTable">
+  <library name="pi4j.core" type="repository">
+    <properties maven-id="com.pi4j:pi4j-core:1.4" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-core-1.4.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jaxb-api-2.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.activation-api-1.2.0.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-core-1.4-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jaxb-api-2.3.1-javadoc.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.activation-api-1.2.0-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-core-1.4-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/jaxb-api-2.3.1-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/javax.activation-api-1.2.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

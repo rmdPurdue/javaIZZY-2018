@@ -1,25 +1,10 @@
 
-import Kanagaroo.KangarooConstants;
-import Kanagaroo.KangarooSerial;
-import Kanagaroo.KangarooChannel;
-import com.illposed.osc.OSCListener;
-import com.illposed.osc.OSCMessage;
-import com.illposed.osc.OSCPortIn;
-import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
-import com.pi4j.gpio.extension.ads.ADS1115Pin;
-import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifierValue;
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.gpio.GpioPinAnalogInput;
-import com.pi4j.io.gpio.event.GpioPinAnalogValueChangeEvent;
-import com.pi4j.io.gpio.event.GpioPinListenerAnalog;
-import com.pi4j.io.i2c.I2CBus;
+import Hardware.Kanagaroo.KangarooConstants;
+import Hardware.Kanagaroo.KangarooSerial;
+import Hardware.Kanagaroo.KangarooChannel;
 import com.pi4j.io.i2c.I2CFactory.UnsupportedBusNumberException;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Rich Dionne
