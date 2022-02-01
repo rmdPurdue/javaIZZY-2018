@@ -18,6 +18,7 @@ import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,6 +40,7 @@ public class Main {
     private static KangarooSerial kangaroo;
     private static KangarooSimpleChannel D;
     private static KangarooSimpleChannel T;
+    private static Process obstacleDetectionProcess;
 
     public static void main(String[] args) throws InterruptedException {
         System.out.println("Hello From IZZY!");
@@ -57,6 +59,17 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Unsafe Operation. Could not setup heartbeat.");
             e.printStackTrace();
+            return;
+        }
+
+        //start obstacle detection code at program start
+        ProcessBuilder pb = new ProcessBuilder("./izzy-obstacle.sh").inheritIO();
+        pb.directory(new File("/home/pi"));
+        try {
+            obstacleDetectionProcess = pb.start();
+        } catch (IOException e) {
+            heartBeat.setErrorMessage("Invalid Operation. Could not start obstacle detection.");
+            heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
         }
 
@@ -151,6 +164,7 @@ public class Main {
             lineFollowLoop.join();
             motherUpdateLoop.join();
             obstacleDetectionLoop.join();
+            obstacleDetectionProcess.destroy();
         } catch (Exception e) {
             heartBeat.setErrorMessage("Critical Error. Could not close control threads. Power down IZZY.");
             heartBeat.setMessageType(MessageType.BROKEN);
