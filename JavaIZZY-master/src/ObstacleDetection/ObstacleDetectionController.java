@@ -24,13 +24,10 @@ public class ObstacleDetectionController implements Runnable {
         while(isRunning.get()) {
             short flaggedMessage = server.receiveMessage()[361];
             int unsigned = Short.toUnsignedInt(flaggedMessage);
-            System.out.println("SIGNED: " + flaggedMessage);
-            System.out.println("UNSIGNED: " + unsigned);
             if ((unsigned & 255) > 0) { // if any of the first 8 bits are 1 (detected within 200mm)
                 izzyMove.setIsMoving(false);
             }
             // if any of the second 8 bits are 1 (detected within 400mm)
-            //dangerApproaching.set(false);
             dangerApproaching.set((unsigned & 65280) > 0);
         }
         server.stopServer();

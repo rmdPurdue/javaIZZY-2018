@@ -32,6 +32,12 @@ public class IZZYOSCSenderLineFollow {
         outgoingMessage.addArgument(izzyMove.isSensor0());
         outgoingMessage.addArgument(izzyMove.isSensor1());
         outgoingMessage.addArgument(izzyMove.isSensor2());
+        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[0]);
+        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[1]);
+        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[2]);
+        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[0]);
+        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[1]);
+        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[2]);
         sender.send(outgoingMessage);
     }
 

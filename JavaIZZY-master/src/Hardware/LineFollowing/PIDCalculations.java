@@ -135,4 +135,13 @@ public class PIDCalculations {
         return (-(Math.atan(getPidValue() / sensorArray.getYDistance())) * 180) / Math.PI;
     }
 
+    public void resetSystem() {
+        error = 0;
+        errorSum = 0;
+        previousError = 0;
+        kp = 0;
+        ki = 0;
+        kd = 0;
+        pidValue = 0;
+    }
 }

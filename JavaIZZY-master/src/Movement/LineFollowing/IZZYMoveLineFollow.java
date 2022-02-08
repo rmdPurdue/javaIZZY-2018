@@ -109,6 +109,24 @@ public class IZZYMoveLineFollow extends IZZYMove {
         return sensorArray.readSensors()[2];
     }
 
+    public int[] getSensorsAnalog() {
+        return sensorArray.getSensorsAnalog();
+    }
+
+    public int[] getSensorThresholds() {
+        return sensorArray.getSensorThresholds();
+    }
+
+    public void setSensorThresholds(int leftThreshold, int centerThreshold, int rightThreshold) {
+        sensorArray.setSensorThresholds(leftThreshold, centerThreshold, rightThreshold);
+    }
+
+    public void resetSystem() {
+        pidCalculations.resetSystem();
+        super.resetKangaroo();
+        speedValue.set(25);
+    }
+
     public void stop() {
         izzyMove(0);
         izzyTurn((int) (-pidCalculations.getErrorAngle() + 0.5));

@@ -8,6 +8,10 @@ public abstract class IZZYMove {
     private final KangarooSimpleChannel T;
     private int driveSpeed;
     private int angleSetPoint;
+    private double wheelRad;
+    private double systemRad;
+    private int encoderResolution;
+    private int motorRatio;
 
     /**
      * Creates instance of IZZYMovement.IZZYMove class
@@ -21,6 +25,10 @@ public abstract class IZZYMove {
      */
     public IZZYMove(final KangarooSimpleChannel drive, final KangarooSimpleChannel turn, final double wheelRad,
                     final double systemRad, final int encoderResolution, final int motorRatio) {
+        this.wheelRad = wheelRad;
+        this.systemRad = systemRad;
+        this.encoderResolution = encoderResolution;
+        this.motorRatio = motorRatio;
         this.D = drive;
         this.T = turn;
         this.D.start();
@@ -87,6 +95,20 @@ public abstract class IZZYMove {
     public void eStop() {
         this.D.powerDown();
         this.T.powerDown();
+    }
+
+    public void resetKangaroo() {
+        this.D.powerDown();
+        this.T.powerDown();
+        this.D.start();
+        this.T.start();
+        double readableDrive = (Math.PI * (wheelRad * 2));
+        double lineDrive = (encoderResolution * motorRatio);
+        double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
+        this.D.units( (int)(readableDrive + 0.5) + " mm = " + (int)(lineDrive + 0.5) + " lines");
+        this.T.units("360 degrees = " + (int)(lineAngle + 0.5) + " lines");
+        this.D.S(0);
+        this.T.P(0);
     }
 
 }

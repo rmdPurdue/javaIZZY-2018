@@ -25,7 +25,7 @@ public class MotherValuesControlThread implements Runnable {
         while (isRunning.get()) {
             try {
                 izzyoscSenderLineFollow.sendData();
-                Thread.sleep(1000);
+                Thread.sleep(200);
                 errorCount = 0;
             } catch (Exception e) {
                 // Swallow exception to prevent logic stop for feedback error unless 3 consecutive errors

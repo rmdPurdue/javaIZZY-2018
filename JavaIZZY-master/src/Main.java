@@ -19,7 +19,6 @@ import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -67,7 +66,7 @@ public class Main {
         pb.directory(new File("/home/pi"));
         try {
             obstacleDetectionProcess = pb.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             heartBeat.setErrorMessage("Invalid Operation. Could not start obstacle detection.");
             heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
@@ -89,11 +88,11 @@ public class Main {
         }
 
         //Initialize sensors and map sensors to GPIO pins
-        LineSensor sensor1 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor1 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Left
-        LineSensor sensor2 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor2 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A1, "DistanceSensor-A1")); // Center
-        LineSensor sensor3 = new LineSensor(14900, gpio.provisionAnalogInputPin(gpioProvider,
+        LineSensor sensor3 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
                 ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Right
 
         //Create array of mapped sensors
@@ -148,7 +147,7 @@ public class Main {
         try {
             obstacleDetectionController = new ObstacleDetectionController(isRunning, izzyMove, dangerApproaching);
         } catch (Exception e) {
-            heartBeat.setErrorMessage("Invalid Operation. Could not create Mother Sender OSC object.");
+            heartBeat.setErrorMessage("Invalid Operation. Could not create Obstacle Detection object.");
             heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
         }
@@ -172,7 +171,7 @@ public class Main {
         }
 
         //Closes the receiver port to free up for next use
-        IZZYOSCReceiverLineFollow.close();
+        IZZYOSCReceiverLineFollow.stopListening();
 
     }
 }
