@@ -45,7 +45,6 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
                 } catch (final Exception e) {
                     System.out.println(e.getMessage());
                 }
-                Thread.sleep(100);
             }
             izzyMove.stop();
         } catch (final Exception e) {
