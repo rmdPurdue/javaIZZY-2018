@@ -1,11 +1,14 @@
 package Hardware.Kanagaroo.KangarooSimpleSerial;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * @author Rich Dionne
  * @project JavaIZZY
  * @package Hardware.Kanagaroo.KangarooSimpleSerial
  * @date 12/18/2017
  */
+@Log4j2
 public class KangarooSimpleChannel {
     byte[] data;
     char name;
@@ -67,7 +70,7 @@ public class KangarooSimpleChannel {
     public void start(){
         String command =("start" + '\r' + '\n');
         kangaroo.write(this, command);
-        System.out.println("System has started\n");
+        log.debug("System has started\n");
     }
 
     public void powerDown() {

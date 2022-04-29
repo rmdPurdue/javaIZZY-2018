@@ -2,6 +2,7 @@ package MotherCommunication.Heartbeat;
 
 import MotherCommunication.Heartbeat.Devices.IZZY;
 import MotherCommunication.Heartbeat.Devices.Mother;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.net.DatagramSocket;
@@ -19,6 +20,7 @@ import static MotherCommunication.PortEnumerations.*;
  * @package comms
  * @date 12/6/2018
  */
+@Log4j2
 public class HeartbeatResponder implements Runnable {
 
     private static HeartbeatResponder currentInstance;
@@ -111,7 +113,7 @@ public class HeartbeatResponder implements Runnable {
         try {
             message = new HeartbeatMessage(Arrays.copyOfRange(receivedPacket.getData(), 0, receivedPacket.getLength()));
         } catch (IllegalArgumentException e) {
-            System.out.println("Not a valid message");
+            log.error("Not a valid message");
             return;
         }
 

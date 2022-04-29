@@ -17,6 +17,7 @@ import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifier
 import com.pi4j.io.gpio.GpioController;
 import com.pi4j.io.gpio.GpioFactory;
 import com.pi4j.io.i2c.I2CBus;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @package PACKAGE_NAME
  * @date 12/10/2017
  */
+@Log4j2
 public class Main {
 
     private static AtomicBoolean isRunning;
@@ -42,8 +44,8 @@ public class Main {
     private static Process obstacleDetectionProcess;
 
     public static void main(String[] args) throws InterruptedException {
-        System.out.println("Hello From IZZY!");
-
+        log.debug("Hello From IZZY!");
+        log.debug("LOGGED");
         // Create single breaking point to halt all processing
         isRunning = new AtomicBoolean(true); // set to false stops all loops and ends program
 
@@ -56,7 +58,7 @@ public class Main {
                 Thread.sleep(1000);
             }
         } catch (Exception e) {
-            System.out.println("Unsafe Operation. Could not setup heartbeat.");
+            log.error("Unsafe Operation. Could not setup heartbeat.");
             e.printStackTrace();
             return;
         }
@@ -136,8 +138,7 @@ public class Main {
                 heartBeat));
 
         // Creates thread to handle line follow control
-        Thread lineFollowLoop = new Thread(new LineFollowControlThread(isRunning, izzyMove, heartBeat,
-                IZZYOSCSenderLineFollow));
+        Thread lineFollowLoop = new Thread(new LineFollowControlThread(isRunning, izzyMove, heartBeat));
 
         // Start listening for mother commands
         IZZYOSCReceiverLineFollow.startListening();
@@ -161,17 +162,22 @@ public class Main {
         try {
             //When loops exit, program stops
             lineFollowLoop.join();
+            log.debug("GTYHJKI");
             motherUpdateLoop.join();
+            log.debug("FGHJKH");
             obstacleDetectionLoop.join();
+            log.debug("OIKJHG");
             obstacleDetectionProcess.destroy();
+            log.debug("CVBNMK");
         } catch (Exception e) {
             heartBeat.setErrorMessage("Critical Error. Could not close control threads. Power down IZZY.");
             heartBeat.setMessageType(MessageType.BROKEN);
             return;
         }
 
+        log.debug("UJKHBV");
         //Closes the receiver port to free up for next use
         IZZYOSCReceiverLineFollow.stopListening();
-
+        log.debug("HBVGFC");
     }
 }

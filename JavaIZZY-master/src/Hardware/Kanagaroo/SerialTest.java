@@ -3,6 +3,7 @@ package Hardware.Kanagaroo;
 import com.pi4j.io.serial.*;
 import com.pi4j.util.CommandArgumentParser;
 import com.pi4j.util.Console;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Date;
  * @package Hardware.Kanagaroo
  * @date 12/17/2017
  */
+@Log4j2
 public class SerialTest {
 
     public static void main(String args[]) throws InterruptedException, IOException {
@@ -46,7 +48,7 @@ public class SerialTest {
                     " We are sending ASCII data on the serial port every 1 second.",
                     " Data received on serial port will be displayed below.");
             serial.open(config);
-            System.out.println("Serial Opened!");
+            log.debug("Serial Opened!");
             while (console.isRunning()) {
                 try {
                     serial.write("CURRENT TIME: " + new Date().toString());

@@ -2,6 +2,7 @@ package Hardware.Kanagaroo;
 
 import Hardware.Kanagaroo.Enumerations.*;
 import com.pi4j.io.serial.*;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author Rich Dionne
@@ -9,6 +10,7 @@ import com.pi4j.io.serial.*;
  * @package Hardware.Kanagaroo
  * @date 12/11/2017
  */
+@Log4j2
 public class KangarooChannel {
     private int address;
     private char name;
@@ -259,22 +261,22 @@ public class KangarooChannel {
             setNoReply(command, contents, moveFlags);
             this.monitor = null;
         } else {
-            System.out.println("Sending not streaming.");
+            log.debug("Sending not streaming.");
             KangarooTimeout timeout = new KangarooTimeout(this.commandTimeout);
-            System.out.println("Timeout: " + timeout.getTimeout());
+            log.debug("Timeout: " + timeout.getTimeout());
             moveFlags = KangarooMoveFlags.fromInteger(moveFlags.getValue() | KangarooMoveFlags.SEQUENCE_CODE.getValue());
-            System.out.println("Move Flags: " + moveFlags.getValue());
+            log.debug("Move Flags: " + moveFlags.getValue());
             this.monitor = monitor;
-            System.out.println("Get Initial Sequence Code If Necessary...");
+            log.debug("Get Initial Sequence Code If Necessary...");
             this.monitoredGetResult = getInitialSequenceCodeIfNecessary(timeout);
 
             if(this.monitoredGetResult == null) {
                 this.monitoredGetType = getType.getValue();
                 this.monitoredGetFlags = moveFlags.getValue();
                 this.monitoredSequenceCode = nextCode(monitoredSequenceCode);
-                System.out.println("Monitored Get Type = " + this.monitoredGetType);
-                System.out.println("Monitored Get Flags = " + this.monitoredGetFlags);
-                System.out.println("Monitored Sequence Code = " + this.monitoredSequenceCode);
+                log.debug("Monitored Get Type = " + this.monitoredGetType);
+                log.debug("Monitored Get Flags = " + this.monitoredGetFlags);
+                log.debug("Monitored Sequence Code = " + this.monitoredSequenceCode);
                 while(!updateMonitoredResult(timeout, false)) {
                     setNoReply(command, contents, moveFlags);
                 }
@@ -336,18 +338,18 @@ public class KangarooChannel {
 
         while(true) {
             if(!this.kangaroo.isOpen()) {
-                System.out.println("Port is closed.");
+                log.debug("Port is closed.");
                 return KangarooStatus.createPortNotOpen();
             }
             if(timeout.expired()) {
-                System.out.println("Timeout has expired.");
+                log.debug("Timeout has expired.");
                 return KangarooStatus.createTimedOut();
             }
             if(retry.expired()) {
-                System.out.println("Retry has expired.");
+                log.debug("Retry has expired.");
                 retry.reset();
                 this.echoCode = nextCode(this.echoCode);
-                System.out.println("Echo code: " + this.echoCode);
+                log.debug("Echo code: " + this.echoCode);
                 KangarooCommandWriter writer = new KangarooCommandWriter();
                 writer.write((byte)this.name);
                 writer.write((byte)flags.getValue());
@@ -362,8 +364,8 @@ public class KangarooChannel {
                 }
             }
 
-            System.out.print("Successful write. ");
-            System.out.println("Waiting to receive reply.");
+            log.debug("Successful write. ");
+            log.debug("Waiting to receive reply.");
             if(!this.kangaroo.tryReceivePacket(timeout.getTimeout() < retry.getTimeout() ? timeout : retry)) {
 //                System.out.println("Trying to receive packet.");
                 continue;
@@ -382,18 +384,18 @@ public class KangarooChannel {
 
     private KangarooStatus getInitialSequenceCodeIfNecessary(KangarooTimeout timeout) {
         if(this.monitoredSequenceCodeIsReady) {
-            System.out.println("Monitored Sequence Code is ready: " + this.monitoredSequenceCodeIsReady);
+            log.debug("Monitored Sequence Code is ready: " + this.monitoredSequenceCodeIsReady);
             return null;
         }
-        System.out.println("Monitored Sequence Code is ready (" + this.monitoredSequenceCodeIsReady + "): " + this.monitoredSequenceCode);
+        log.debug("Monitored Sequence Code is ready (" + this.monitoredSequenceCodeIsReady + "): " + this.monitoredSequenceCode);
         KangarooStatus status = getSpecial(KangarooGetType.P, KangarooGetFlags.SEQUENCE_CODE, timeout);
         if(status.getError().getValue() < 0) {
-            System.out.println("Error: " + status.getError().getValue());
+            log.error("Error: " + status.getError().getValue());
             return status; }
         this.monitoredSequenceCode = status.getSequenceCode();
         this.monitoredSequenceCodeIsReady = true;
-        System.out.println("Monitored Sequence Code: " + this.monitoredSequenceCode);
-        System.out.println("Sequence Code is Ready: " + this.monitoredSequenceCodeIsReady);
+        log.debug("Monitored Sequence Code: " + this.monitoredSequenceCode);
+        log.debug("Sequence Code is Ready: " + this.monitoredSequenceCodeIsReady);
         return null;
     }
 

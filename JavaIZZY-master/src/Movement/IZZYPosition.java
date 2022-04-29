@@ -1,8 +1,10 @@
 package Movement;
 
 import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSimpleChannel;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
+@Log4j2
 public abstract class IZZYPosition {
 
     private int homex = 0;
@@ -156,7 +158,7 @@ public abstract class IZZYPosition {
             CCWAngle = 0;
         } else {
             tanAngle = Math.atan((float)(this.positiony - y) / (float)(this.positionx - x)) * 360.0 / (2 * 3.14);
-            System.out.println("tanAngle: " + tanAngle);
+            log.debug("tanAngle: " + tanAngle);
             if (x > this.positionx) {
                 if (y > this.positiony) {
                     CCWAngle = tanAngle;
@@ -188,7 +190,7 @@ public abstract class IZZYPosition {
             }
 
         }
-        System.out.println("moving now");
+        log.debug("moving now");
         distance = Math.sqrt(Math.pow(this.positionx - x,2) + Math.pow(this.positiony - y,2));
         this.izzyMove((int)distance);
         this.updatePosition(x,y,z);

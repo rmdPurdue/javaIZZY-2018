@@ -1,6 +1,7 @@
 package Hardware.Kanagaroo;
 
 import com.pi4j.io.serial.*;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
  * @package Hardware.Kanagaroo
  * @date 12/11/2017
  */
+@Log4j2
 public class KangarooSerial implements AutoCloseable {
 
     private SerialConfig port;
@@ -60,7 +62,7 @@ public class KangarooSerial implements AutoCloseable {
             this.bufferOffset = 0;
             this.bufferLength = 0;
         } catch (IOException e) {
-            System.out.println(" ==>> SERIAL SETUP FAILED : " + e.getMessage());
+            log.error(" ==>> SERIAL SETUP FAILED : " + e.getMessage());
             this.open = false;
         }
     }
@@ -134,12 +136,12 @@ public class KangarooSerial implements AutoCloseable {
     public boolean tryReceivePacket(KangarooTimeout timeout) {
         while(true) {
             if(!open) {
-                System.out.println("Port not open.");
+                log.error("Port not open.");
                 return false;
             }
             try {
                 byte[] data = this.serial.read();
-                System.out.println("Received: ");
+                log.debug("Received: ");
 //                for(byte datum : data) {
 //                    System.out.println(datum + " : " + Integer.toBinaryString((int)datum));
 //                }
@@ -150,7 +152,7 @@ public class KangarooSerial implements AutoCloseable {
             //System.out.println("Offset: " + this.bufferOffset + " Length: " + this.bufferLength);
             if(this.bufferOffset < this.bufferLength) {
                 word = this.buffer[this.bufferOffset++];
-                System.out.println("Got this: " + word);
+                log.debug("Got this: " + word);
             } else {
 //                System.out.println("Buffer Offset is smaller than Buffer Length.");
 //                System.out.println("Offset: " + this.bufferOffset + " Length: " + this.bufferLength);

@@ -12,6 +12,7 @@ public abstract class IZZYMove {
     private double systemRad;
     private int encoderResolution;
     private int motorRatio;
+    private final Object syncLock;
 
     /**
      * Creates instance of IZZYMovement.IZZYMove class
@@ -25,6 +26,7 @@ public abstract class IZZYMove {
      */
     public IZZYMove(final KangarooSimpleChannel drive, final KangarooSimpleChannel turn, final double wheelRad,
                     final double systemRad, final int encoderResolution, final int motorRatio) {
+        this.syncLock = new Object();
         this.wheelRad = wheelRad;
         this.systemRad = systemRad;
         this.encoderResolution = encoderResolution;
@@ -49,7 +51,9 @@ public abstract class IZZYMove {
      */
     public void izzyTurn(int angleIn) {
         this.angleSetPoint = angleIn;
-        this.T.P(this.angleSetPoint);
+        synchronized (syncLock) {
+            this.T.P(this.angleSetPoint);
+        }
     }
 
     /**
@@ -59,7 +63,9 @@ public abstract class IZZYMove {
      */
     public void izzyTurn(int angleIn, int speed) {
         this.angleSetPoint = angleIn;
-        this.T.P(this.angleSetPoint, speed);
+        synchronized (syncLock) {
+            this.T.P(this.angleSetPoint, speed);
+        }
     }
 
     /**
@@ -69,7 +75,9 @@ public abstract class IZZYMove {
      */
     public void izzyTurnIncrement(int angleIn) {
         this.angleSetPoint += angleIn;
-        this.T.PI(this.angleSetPoint);
+        synchronized (syncLock) {
+            this.T.PI(this.angleSetPoint);
+        }
     }
 
     /**
@@ -79,7 +87,9 @@ public abstract class IZZYMove {
      */
     public void izzyMove(int speed) {
         this.driveSpeed = speed;
-        this.D.S(this.driveSpeed);
+        synchronized (syncLock) {
+            this.D.S(this.driveSpeed);
+        }
     }
 
     /**
@@ -89,26 +99,32 @@ public abstract class IZZYMove {
      */
     public void izzyMoveIncrement(int speed) {
         this.driveSpeed += speed;
-        this.D.SI(this.driveSpeed);
+        synchronized (syncLock) {
+            this.D.SI(this.driveSpeed);
+        }
     }
 
     public void eStop() {
-        this.D.powerDown();
-        this.T.powerDown();
+        synchronized (syncLock) {
+            this.D.powerDown();
+            this.T.powerDown();
+        }
     }
 
     public void resetKangaroo() {
-        this.D.powerDown();
-        this.T.powerDown();
-        this.D.start();
-        this.T.start();
-        double readableDrive = (Math.PI * (wheelRad * 2));
-        double lineDrive = (encoderResolution * motorRatio);
-        double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
-        this.D.units( (int)(readableDrive + 0.5) + " mm = " + (int)(lineDrive + 0.5) + " lines");
-        this.T.units("360 degrees = " + (int)(lineAngle + 0.5) + " lines");
-        this.D.S(0);
-        this.T.P(0);
+        synchronized (syncLock) {
+            this.D.powerDown();
+            this.T.powerDown();
+            this.D.start();
+            this.T.start();
+            double readableDrive = (Math.PI * (wheelRad * 2));
+            double lineDrive = (encoderResolution * motorRatio);
+            double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
+            this.D.units((int) (readableDrive + 0.5) + " mm = " + (int) (lineDrive + 0.5) + " lines");
+            this.T.units("360 degrees = " + (int) (lineAngle + 0.5) + " lines");
+            this.D.S(0);
+            this.T.P(0);
+        }
     }
 
 }

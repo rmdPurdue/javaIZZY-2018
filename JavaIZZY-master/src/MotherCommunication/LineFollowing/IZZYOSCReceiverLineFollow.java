@@ -4,6 +4,7 @@ import MotherCommunication.IZZYOSCReceiver;
 import Movement.LineFollowing.IZZYMoveLineFollow;
 import com.illposed.osc.OSCListener;
 import com.illposed.osc.OSCMessage;
+import lombok.extern.log4j.Log4j2;
 
 import java.net.SocketException;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static MotherCommunication.LineFollowing.OSCAddresses.*;
 
+@Log4j2
 public class IZZYOSCReceiverLineFollow extends IZZYOSCReceiver {
 
     private final AtomicBoolean isRunning;
@@ -18,37 +20,37 @@ public class IZZYOSCReceiverLineFollow extends IZZYOSCReceiver {
 
     // Listen for stop / start commands
     private final OSCListener followLineStateListener = (time, motherMessage) -> {
-        System.out.println("Line State Message received from Mother!");
+        log.debug("Line State Message received from Mother!");
         parseFollowLineStateOSC(motherMessage);
     };
     // Listen for speed values
     private final OSCListener followLineSpeedListener = (time, motherMessage) -> {
-        System.out.println("Line Speed Message received from Mother!");
+        log.debug("Line Speed Message received from Mother!");
         parseFollowLineSpeedOSC(motherMessage);
     };
     // Listen for Kp, Ki, and Kd values
     private final OSCListener followLineTuneListener = (time, motherMessage) -> {
-        System.out.println("Line Tune Message received from Mother!");
+        log.debug("Line Tune Message received from Mother!");
         parseFollowLineTuneOSC(motherMessage);
     };
     //Listen for sensor threshold values
     private final OSCListener followLineThresholdListener = (time, motherMessage) -> {
-        System.out.println("Sensor Threshold Message received from Mother!");
+        log.debug("Sensor Threshold Message received from Mother!");
         parseFollowLineThresholdOSC(motherMessage);
     };
     //Listen for StopProcessing Signal
     private final OSCListener stopProcessingListener = (time, motherMessage) -> {
-        System.out.println("End Processing");
+        log.debug("End Processing");
         parseStopProcessing(motherMessage);
     };
     //Listen for ResetSystem Signal
     private final OSCListener resetSystemListener = (time, motherMessage) -> {
-        System.out.println("End Processing");
+        log.debug("End Processing");
         parseResetSystem(motherMessage);
     };
     // Listen for eStop messages
     private final OSCListener eStopListener = (time, motherMessage) -> {
-        System.out.println("ESTOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        log.debug("ESTOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         eStopOSC(motherMessage);
     };
 

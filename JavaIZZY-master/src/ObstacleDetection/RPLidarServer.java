@@ -1,5 +1,7 @@
 package ObstacleDetection;
 
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -14,6 +16,7 @@ import java.util.Arrays;
  *
  * @author eholl
  */
+@Log4j2
 public class RPLidarServer {
 
     private final DatagramSocket s;
@@ -21,6 +24,7 @@ public class RPLidarServer {
 
     public RPLidarServer(int portNum) throws IOException {
         this.s = new DatagramSocket(portNum); //the server socket
+        this.s.setSoTimeout(2000);
         this.incoming = null;
     }
 

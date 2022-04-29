@@ -22,7 +22,11 @@ public class ObstacleDetectionController implements Runnable {
     @Override
     public void run() {
         while(isRunning.get()) {
-            short flaggedMessage = server.receiveMessage()[361];
+            short[] receivedMessage = server.receiveMessage();
+            if (receivedMessage == null) {
+                continue;
+            }
+            short flaggedMessage = receivedMessage[361];
             int unsigned = Short.toUnsignedInt(flaggedMessage);
             if ((unsigned & 255) > 0) { // if any of the first 8 bits are 1 (detected within 200mm)
                 izzyMove.setIsMoving(false);

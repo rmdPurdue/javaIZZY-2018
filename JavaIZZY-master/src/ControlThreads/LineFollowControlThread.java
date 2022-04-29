@@ -3,27 +3,25 @@ package ControlThreads;
 import MotherCommunication.Heartbeat.HeartbeatResponder;
 import MotherCommunication.Heartbeat.HeartbeatResponseListener;
 import MotherCommunication.Heartbeat.MotherStatus;
-import MotherCommunication.LineFollowing.IZZYOSCSenderLineFollow;
 import Movement.LineFollowing.IZZYMoveLineFollow;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@Log4j2
 public class LineFollowControlThread implements Runnable, HeartbeatResponseListener {
 
     private final AtomicBoolean running;
     private final IZZYMoveLineFollow izzyMove;
     private final HeartbeatResponder heartBeat;
-    private final IZZYOSCSenderLineFollow izzyoscSenderLineFollow;
     private boolean isHeartBeating;
 
     public LineFollowControlThread(final AtomicBoolean running, final IZZYMoveLineFollow izzyMove,
-                                   final HeartbeatResponder heartBeat,
-                                   final IZZYOSCSenderLineFollow izzyoscSenderLineFollow) {
+                                   final HeartbeatResponder heartBeat) {
         this.running = running;
         this.isHeartBeating = false;
         this.izzyMove = izzyMove;
         this.heartBeat = heartBeat;
-        this.izzyoscSenderLineFollow = izzyoscSenderLineFollow;
     }
 
     @Override
@@ -32,7 +30,7 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
             this.heartBeat.setListener(this);
             while (running.get()) {
                 if (!isHeartBeating) {
-                    System.out.println("Heart Not Beating");
+                    log.debug("Heart Not Beating");
                     Thread.sleep(100);
                     continue;
                 }
@@ -43,15 +41,15 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
                         izzyMove.izzyMove(0);
                     }
                 } catch (final Exception e) {
-                    System.out.println(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
             izzyMove.stop();
         } catch (final Exception e) {
-            System.out.println("The control interface has stopped looping");
+            log.error("The control interface has stopped looping");
             e.printStackTrace();
         } finally {
-            System.out.println("The control interface has stopped looping");
+            log.debug("The control interface has stopped looping");
         }
     }
 
