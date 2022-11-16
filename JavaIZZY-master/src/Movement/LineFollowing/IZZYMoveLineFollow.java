@@ -2,6 +2,7 @@ package Movement.LineFollowing;
 
 import Exceptions.EStopException;
 import Exceptions.MotionStopException;
+import Hardware.LineFollowing.DriveReadings;
 import Hardware.LineFollowing.PIDCalculations;
 import Hardware.LineFollowing.SensorArray;
 import Movement.IZZYMove;
@@ -17,6 +18,7 @@ public class IZZYMoveLineFollow extends IZZYMove {
     private final PIDCalculations pidCalculations; // monitor sensors and automate movement
     private final SensorArray sensorArray;
     private final AtomicBoolean dangerApproaching; // triggered if object getting close
+    private final DriveReadings driveReadings;
 
     /**
      * Creates instance of IZZYMovement.IZZYMove class
@@ -32,13 +34,15 @@ public class IZZYMoveLineFollow extends IZZYMove {
     public IZZYMoveLineFollow(final KangarooSimpleChannel drive, final KangarooSimpleChannel turn,
                               final SensorArray sensorArray, final double wheelRad, final double systemRad,
                               final int encoderResolution, final int motorRatio,
-                              final AtomicBoolean dangerApproaching) {
-        super(drive, turn, wheelRad, systemRad, encoderResolution, motorRatio);
+                              final AtomicBoolean dangerApproaching, final Object kangarooSyncLock,
+                              final DriveReadings driveReadings) {
+        super(drive, turn, wheelRad, systemRad, encoderResolution, motorRatio, kangarooSyncLock, driveReadings);
         speedValue = new AtomicInteger(0);
         isMoving = new AtomicBoolean(false);
         this.sensorArray = sensorArray;
-        this.pidCalculations = new PIDCalculations(1, 1, 1, sensorArray);
+        this.pidCalculations = new PIDCalculations(1, 0, 0, sensorArray);
         this.dangerApproaching = dangerApproaching;
+        this.driveReadings = driveReadings;
     }
 
     /**
@@ -52,7 +56,7 @@ public class IZZYMoveLineFollow extends IZZYMove {
         } else {
             izzyMove(speedValue.get());
         }
-        izzyTurn((int) (-pidCalculations.getErrorAngle() + 0.5), 25);
+        izzyTurnIncrement((int) (-pidCalculations.getErrorAngle() + 0.5), speedValue.get()/2);
     }
 
     public void setSpeedValue(final int speed) {
@@ -97,19 +101,10 @@ public class IZZYMoveLineFollow extends IZZYMove {
         return pidCalculations.getKd();
     }
 
-    public boolean isSensor0() {
-        return sensorArray.readSensors()[0];
-    }
-
-    public boolean isSensor1() {
-        return sensorArray.readSensors()[1];
-    }
-
-    public boolean isSensor2() {
-        return sensorArray.readSensors()[2];
-    }
-
     public int[] getSensorsAnalog() {
+        if (!isMoving.get()) {
+            return sensorArray.readSensorsAnalog();
+        }
         return sensorArray.getSensorsAnalog();
     }
 

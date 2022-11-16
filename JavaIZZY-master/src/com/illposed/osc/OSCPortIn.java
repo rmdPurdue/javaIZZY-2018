@@ -11,10 +11,13 @@ package com.illposed.osc;
 import com.illposed.osc.utility.OSCByteArrayToJavaConverter;
 import com.illposed.osc.utility.OSCPacketDispatcher;
 import com.illposed.osc.utility.OSCPatternAddressSelector;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.charset.Charset;
 
 /**
@@ -39,6 +42,7 @@ import java.nio.charset.Charset;
  *
  * @author Chandrasekhar Ramakrishnan
  */
+@Log4j2
 public class OSCPortIn extends OSCPort implements Runnable {
 
 	/**
@@ -102,10 +106,14 @@ public class OSCPortIn extends OSCPort implements Runnable {
 		final DatagramPacket packet = new DatagramPacket(buffer, BUFFER_SIZE);
 		final DatagramSocket socket = getSocket();
 		try {
+			socket.setSoTimeout(5000);
 			while (listening) {
-
 				try {
+					log.debug("ABOUT TO RECEIVE");
 					socket.receive(packet);
+					log.debug("RECEIVING");
+				} catch (SocketTimeoutException e) {
+					continue; // will check if still listening
 				} catch (SocketException ex) {
 					if (listening) {
 						throw ex;

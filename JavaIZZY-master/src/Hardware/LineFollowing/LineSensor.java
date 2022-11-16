@@ -8,6 +8,7 @@ import com.pi4j.io.gpio.GpioPinAnalogInput;
 public class LineSensor {
     private int threshold;  // the analog value at which a sensor is considered to be reading a wire
                             // (ranges for analog feedback are roughly 3000 if reading - 18000 if not reading)
+    private double reading;
     private final GpioPinAnalogInput analogInput; // the GPIO Pin that the sensor is located at
 
     /**
@@ -45,7 +46,8 @@ public class LineSensor {
      * @return double representing analog value of sensor (roughly 3000 if reading - 18000 if not reading)
      */
     public double getSensorReading() {
-        return this.analogInput.getValue();
+        reading = this.analogInput.getValue();
+        return reading;
     }
 
     /**
@@ -54,7 +56,7 @@ public class LineSensor {
      * @return Boolean representing if the sensor is detecting a wire
      */
     public boolean getSensorState() {
-        return (getSensorReading() < getThreshold()); // is sensor reading (lower value = reading)
+        return (reading < getThreshold()); // is sensor reading (lower value = reading)
     }
 
     public String getName() {

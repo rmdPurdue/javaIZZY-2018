@@ -22,6 +22,7 @@ public class MotherValuesControlThread implements Runnable {
     @Override
     public void run() {
         int errorCount = 0;
+        izzyoscSenderLineFollow.startDriveReadings();
         while (isRunning.get()) {
             try {
                 izzyoscSenderLineFollow.sendData();
@@ -34,8 +35,9 @@ public class MotherValuesControlThread implements Runnable {
                     izzyoscSenderLineFollow.close();
                     heartBeat.setMessageType(MessageType.OSC_COM_ERROR);
                     heartBeat.setErrorMessage(e.getMessage());
-                    isRunning.set(false);
+                    isRunning.set(false); // TODO: DO WE WANT THIS? HEARTBEAT INSTEAD?
                 }
+                e.printStackTrace();
             }
         }
     }

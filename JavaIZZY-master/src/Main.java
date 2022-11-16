@@ -1,3 +1,4 @@
+import Hardware.LineFollowing.DriveReadings;
 import Hardware.LineFollowing.LineSensor;
 import Hardware.LineFollowing.SensorArray;
 import MotherCommunication.Heartbeat.HeartbeatResponder;
@@ -41,7 +42,9 @@ public class Main {
     private static KangarooSerial kangaroo;
     private static KangarooSimpleChannel D;
     private static KangarooSimpleChannel T;
+    private static DriveReadings driveReadings;
     private static Process obstacleDetectionProcess;
+    private static Object kangarooSyncLock;
 
     public static void main(String[] args) throws InterruptedException {
         log.debug("Hello From IZZY!");
@@ -91,29 +94,32 @@ public class Main {
 
         //Initialize sensors and map sensors to GPIO pins
         LineSensor sensor1 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
-                ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Left
+                ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Left
         LineSensor sensor2 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
-                ADS1115Pin.INPUT_A1, "DistanceSensor-A1")); // Center
-        LineSensor sensor3 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
-                ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Right
+                ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Right
 
         //Create array of mapped sensors
-        sensorArray = new SensorArray(101.6, 45, 30);
+        sensorArray = new SensorArray(88, 13, 17);
         sensorArray.addSensor(sensor1); // Left
-        sensorArray.addSensor(sensor2); // Center
-        sensorArray.addSensor(sensor3); // Right
+        sensorArray.addSensor(sensor2); // Right
 
         //Connect to IZZY's motion controller and establish channels
         kangaroo = new KangarooSerial();
         kangaroo.open(); // opens a serial connection with motion controller
         D = new KangarooSimpleChannel(kangaroo, 'D'); // drive channel. forward and backward speed
         T = new KangarooSimpleChannel(kangaroo, 'T'); // turn channel. rotation angle
+        kangarooSyncLock = new Object();
 
         // Create boolean to detect if danger is approaching
         dangerApproaching = new AtomicBoolean(false);
 
+        //Create drive sensor tracker
+        driveReadings = new DriveReadings(D, T, kangarooSyncLock, isRunning);
+        kangaroo.addListener(driveReadings);
+
         //Create Movement controller to control mini IZZY's movement
-        izzyMove = new IZZYMoveLineFollow(D, T, sensorArray, 67.3, 124.5, 20, 100, dangerApproaching);
+        izzyMove = new IZZYMoveLineFollow(D, T, sensorArray, 67.3, 124.5, 20, 100,
+                dangerApproaching, kangarooSyncLock, driveReadings);
 
         try {
             //Create OSC communication object to listen for  commands
@@ -126,7 +132,7 @@ public class Main {
 
         try {
             // Creates Mother OSC sender controller to manage the data values sent to mother
-            IZZYOSCSenderLineFollow = new IZZYOSCSenderLineFollow(izzyMove, heartBeat);
+            IZZYOSCSenderLineFollow = new IZZYOSCSenderLineFollow(izzyMove, driveReadings, heartBeat);
         } catch (Exception e) {
             heartBeat.setErrorMessage("Invalid Operation. Could not create Mother Sender OSC object.");
             heartBeat.setMessageType(MessageType.SETUP_ERROR);
@@ -154,6 +160,7 @@ public class Main {
         }
         Thread obstacleDetectionLoop = new Thread(obstacleDetectionController);
 
+        log.info("Starting");
         //Start loops
         lineFollowLoop.start();
         motherUpdateLoop.start();
@@ -169,6 +176,8 @@ public class Main {
             log.debug("OIKJHG");
             obstacleDetectionProcess.destroy();
             log.debug("CVBNMK");
+            kangaroo.close();
+            log.debug("SDFJSDF");
         } catch (Exception e) {
             heartBeat.setErrorMessage("Critical Error. Could not close control threads. Power down IZZY.");
             heartBeat.setMessageType(MessageType.BROKEN);

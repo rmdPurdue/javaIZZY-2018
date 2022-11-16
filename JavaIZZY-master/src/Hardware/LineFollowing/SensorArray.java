@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class SensorArray
 {
-    private final int NUMBER_OF_SENSORS = 3;
+    private final int NUMBER_OF_SENSORS = 2;
 
     private double yDistance; //the distance from the sensors to the center of the wheels for the error angle calculation (in mm)
     private boolean[] signalArray; //the states of all sensors
@@ -27,7 +27,7 @@ public class SensorArray
     }
 
     /**
-     * Adds a LineSensor object to the SensorArray. Should be added in sequential order (L/C/R)
+     * Adds a LineSensor object to the SensorArray. Should be added in sequential order (L/C/R) or (L/R)
      *
      * @param sensor a line sensor object
      */
@@ -93,9 +93,20 @@ public class SensorArray
 
     /**
      * Sets the sensorState array based on the values of all LineSensors in the SensorArray.
-     * Currently only setup for 3 sensors //TODO: make dynamic to the amount of sensors
      */
-    public boolean[] readSensors() {
+    public int[] readSensorsAnalog() {
+        for (int i = 0; i < sensorList.size(); i++) {
+//            System.out.println(sensorList.get(i).getName() + " = " + sensorList.get(i).getSensorReading());
+            analogArray[i] = (int) sensorList.get(i).getSensorReading();
+            signalArray[i] = sensorList.get(i).getSensorState(); //checks if wire is under sensor
+        }
+        return analogArray;
+    }
+
+    /**
+     * Sets the sensorState array based on the values of all LineSensors in the SensorArray.
+     */
+    public boolean[] readSensorsBoolean() {
         for (int i = 0; i < sensorList.size(); i++) {
 //            System.out.println(sensorList.get(i).getName() + " = " + sensorList.get(i).getSensorReading());
             analogArray[i] = (int) sensorList.get(i).getSensorReading();
@@ -106,7 +117,7 @@ public class SensorArray
 
     /**
      * Gets analog values of all sensors from last reading
-     * @return integer array of analog sensor values (L, C, R)
+     * @return integer array of analog sensor values (L, C, R) or (L, R)
      */
     public int[] getSensorsAnalog() {
         return analogArray;
@@ -129,9 +140,25 @@ public class SensorArray
      * @param rightThreshold analog value of threshold for right sensor
      */
     public void setSensorThresholds(int leftThreshold, int centerThreshold, int rightThreshold) {
+        if (sensorList.size() != 3) {
+            throw new RuntimeException("Sensor Array Size != Threshold Size");
+        }
         sensorList.get(0).setThreshold(leftThreshold);
         sensorList.get(1).setThreshold(centerThreshold);
         sensorList.get(2).setThreshold(rightThreshold);
+    }
+
+    /**
+     *
+     * @param leftThreshold analog value of threshold for left sensor
+     * @param rightThreshold analog value of threshold for right sensor
+     */
+    public void setSensorThresholds(int leftThreshold, int rightThreshold) {
+        if (sensorList.size() != 2) {
+            throw new RuntimeException("Sensor Array Size != Threshold Size");
+        }
+        sensorList.get(0).setThreshold(leftThreshold);
+        sensorList.get(1).setThreshold(rightThreshold);
     }
 
 }

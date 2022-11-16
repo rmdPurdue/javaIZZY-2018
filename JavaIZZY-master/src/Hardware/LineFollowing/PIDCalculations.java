@@ -91,20 +91,14 @@ public class PIDCalculations {
      * Throws an eStop exception if there is a catastrophic failure
      */
     public void adjustError() throws MotionStopException, EStopException {
-        final boolean[] signalArray = sensorArray.readSensors();
-        if (signalArray[0] && signalArray[1] && signalArray[2]) {             //  1   1   1
-            throw new MotionStopException("All sensor positive");
-        } else if (!signalArray[0] && !signalArray[1] && !signalArray[2]) {   //  -   -   -
-            throw new MotionStopException("All sensor negative");
-        } else if (signalArray[0] && !signalArray[1] && !signalArray[2]) {    //  1   -   -
-            error = -(sensorArray.getSensorWidth() + sensorArray.getSensorSpacing());
-        } else if (signalArray[0] && signalArray[1] && !signalArray[2]) {     //  1   1   -
-            error = -(sensorArray.getSensorSpacing());
-        } else if (!signalArray[0] && signalArray[1] && !signalArray[2]) {    //  -   1   -
+        final boolean[] signalArray = sensorArray.readSensorsBoolean();
+        if (signalArray[0] && signalArray[1]) {             //  1   1
             error = 0;
-        } else if (!signalArray[0] && signalArray[1] && signalArray[2]) {     //  -   1   1
-            error = sensorArray.getSensorSpacing();
-        } else if (!signalArray[0] && !signalArray[1] && signalArray[2]) {    //  -   -   1
+        } else if (!signalArray[0] && !signalArray[1]) {    //  -   -
+            error = 0;
+        } else if (signalArray[0] && !signalArray[1]) {     //  1   -
+            error = -(sensorArray.getSensorWidth() + sensorArray.getSensorSpacing());
+        } else if (!signalArray[0] && signalArray[1]) {     //  -   1
             error = sensorArray.getSensorSpacing() + sensorArray.getSensorWidth();
         } else {
             throw new EStopException("Critical error in sensor states");
@@ -139,7 +133,7 @@ public class PIDCalculations {
         error = 0;
         errorSum = 0;
         previousError = 0;
-        kp = 0;
+        kp = 1;
         ki = 0;
         kd = 0;
         pidValue = 0;

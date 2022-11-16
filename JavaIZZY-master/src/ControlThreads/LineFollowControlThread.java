@@ -31,7 +31,7 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
             while (running.get()) {
                 if (!isHeartBeating) {
                     log.debug("Heart Not Beating");
-                    Thread.sleep(100);
+                    Thread.sleep(500);
                     continue;
                 }
                 try {
@@ -39,10 +39,12 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
                         izzyMove.followLine();
                     } else {
                         izzyMove.izzyMove(0);
+                        izzyMove.izzyTurnFreeze();
                     }
                 } catch (final Exception e) {
                     log.error(e.getMessage());
                 }
+                Thread.sleep(100);
             }
             izzyMove.stop();
         } catch (final Exception e) {

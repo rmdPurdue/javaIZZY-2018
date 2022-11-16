@@ -24,19 +24,6 @@ public class KangarooSerial implements AutoCloseable {
 
     public KangarooSerial() {
         this.serial = SerialFactory.createInstance();
-
-        serial.addListener(new SerialDataEventListener() {
-            @Override
-            public void dataReceived(SerialDataEvent event) {
-                try {
-                    log.debug("[HEX DATA]   " + event.getHexByteString());
-                    log.debug("[ASCII DATA] " + event.getAsciiString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
         this.port = new SerialConfig();
         port.device("/dev/ttyS0")
                 .baud(Baud._9600)
@@ -47,7 +34,6 @@ public class KangarooSerial implements AutoCloseable {
     }
 
     public void open() {
-//        System.out.println(this.port.valueOf());
         open("/dev/ttyS0");
     }
 
@@ -60,6 +46,10 @@ public class KangarooSerial implements AutoCloseable {
             log.error(" ==>> SERIAL SETUP FAILED: " + e.getMessage());
             this.open = false;
         }
+    }
+
+    public void addListener(SerialDataEventListener listener) {
+        serial.addListener(listener);
     }
 
     public boolean isOpen() {

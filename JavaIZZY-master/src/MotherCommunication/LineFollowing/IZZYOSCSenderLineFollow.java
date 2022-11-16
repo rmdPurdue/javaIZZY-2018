@@ -1,5 +1,6 @@
 package MotherCommunication.LineFollowing;
 
+import Hardware.LineFollowing.DriveReadings;
 import MotherCommunication.Heartbeat.HeartbeatResponder;
 import MotherCommunication.PortEnumerations;
 import Movement.LineFollowing.IZZYMoveLineFollow;
@@ -13,10 +14,17 @@ public class IZZYOSCSenderLineFollow {
 
     private final OSCPortOut sender;
     private final IZZYMoveLineFollow izzyMove;
+    private final DriveReadings driveReadings;
 
-    public IZZYOSCSenderLineFollow(IZZYMoveLineFollow izzyMove, HeartbeatResponder heartBeat) throws SocketException {
+    public IZZYOSCSenderLineFollow(IZZYMoveLineFollow izzyMove, DriveReadings driveReadings,
+                                   HeartbeatResponder heartBeat) throws SocketException {
         this.izzyMove = izzyMove;
+        this.driveReadings = driveReadings;
         this.sender = new OSCPortOut(heartBeat.getMotherIpAddress(), PortEnumerations.OSC_SEND_PORT.getValue());
+    }
+
+    public void startDriveReadings() {
+        driveReadings.startWheelReadingLoop();
     }
 
     public void sendData() throws IOException {
@@ -29,15 +37,18 @@ public class IZZYOSCSenderLineFollow {
         outgoingMessage.addArgument(izzyMove.getKi());
         outgoingMessage.addArgument(izzyMove.getKd());
         outgoingMessage.addArgument(izzyMove.isMoving());
-        outgoingMessage.addArgument(izzyMove.isSensor0());
-        outgoingMessage.addArgument(izzyMove.isSensor1());
-        outgoingMessage.addArgument(izzyMove.isSensor2());
-        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[0]);
-        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[1]);
-        outgoingMessage.addArgument(izzyMove.getSensorsAnalog()[2]);
-        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[0]);
-        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[1]);
-        outgoingMessage.addArgument(izzyMove.getSensorThresholds()[2]);
+        int[] sensorAnalog = izzyMove.getSensorsAnalog(); //potential I/O (if not moving)
+        outgoingMessage.addArgument(sensorAnalog[0]);
+        outgoingMessage.addArgument(0);
+        outgoingMessage.addArgument(sensorAnalog[1]);
+        int[] sensorThresholds = izzyMove.getSensorThresholds();
+        outgoingMessage.addArgument(sensorThresholds[0]);
+        outgoingMessage.addArgument(0);
+        outgoingMessage.addArgument(sensorThresholds[1]);
+        outgoingMessage.addArgument(driveReadings.getDriveP());
+        outgoingMessage.addArgument(driveReadings.getDriveS());
+        outgoingMessage.addArgument(driveReadings.getTurnP());
+        outgoingMessage.addArgument(driveReadings.getTurnS());
         sender.send(outgoingMessage);
     }
 

@@ -1,6 +1,7 @@
 package Movement;
 
 import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSimpleChannel;
+import Hardware.LineFollowing.DriveReadings;
 
 public abstract class IZZYMove {
 
@@ -12,7 +13,8 @@ public abstract class IZZYMove {
     private double systemRad;
     private int encoderResolution;
     private int motorRatio;
-    private final Object syncLock;
+    private final Object kangarooSyncLock;
+    private final DriveReadings driveReadings;
 
     /**
      * Creates instance of IZZYMovement.IZZYMove class
@@ -25,12 +27,14 @@ public abstract class IZZYMove {
      * @param motorRatio the amount of gear turns per one wheel turn
      */
     public IZZYMove(final KangarooSimpleChannel drive, final KangarooSimpleChannel turn, final double wheelRad,
-                    final double systemRad, final int encoderResolution, final int motorRatio) {
-        this.syncLock = new Object();
+                    final double systemRad, final int encoderResolution, final int motorRatio,
+                    final Object kangarooSyncLock, final DriveReadings driveReadings) {
+        this.kangarooSyncLock = kangarooSyncLock;
         this.wheelRad = wheelRad;
         this.systemRad = systemRad;
         this.encoderResolution = encoderResolution;
         this.motorRatio = motorRatio;
+        this.driveReadings = driveReadings;
         this.D = drive;
         this.T = turn;
         this.D.start();
@@ -51,7 +55,7 @@ public abstract class IZZYMove {
      */
     public void izzyTurn(int angleIn) {
         this.angleSetPoint = angleIn;
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.T.P(this.angleSetPoint);
         }
     }
@@ -63,8 +67,20 @@ public abstract class IZZYMove {
      */
     public void izzyTurn(int angleIn, int speed) {
         this.angleSetPoint = angleIn;
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.T.P(this.angleSetPoint, speed);
+        }
+    }
+
+    /**
+     * Turns IZZY an incremented angle
+     *
+     * @param angleIn incrementing angle in degrees
+     */
+    public void izzyTurnIncrement(int angleIn, int speed) {
+        this.angleSetPoint += angleIn;
+        synchronized (kangarooSyncLock) {
+            this.T.PI(angleIn, speed);
         }
     }
 
@@ -75,9 +91,16 @@ public abstract class IZZYMove {
      */
     public void izzyTurnIncrement(int angleIn) {
         this.angleSetPoint += angleIn;
-        synchronized (syncLock) {
-            this.T.PI(this.angleSetPoint);
+        synchronized (kangarooSyncLock) {
+            this.T.PI(angleIn);
         }
+    }
+
+    /**
+     * Sets IZZY's turn value to the current angle. Essentially freezing IZZY in place
+     */
+    public void izzyTurnFreeze() {
+        izzyTurn(driveReadings.getTurnP());
     }
 
     /**
@@ -86,8 +109,11 @@ public abstract class IZZYMove {
      * @param speed speed in mm/sec
      */
     public void izzyMove(int speed) {
+        if (this.driveSpeed == speed) {
+            return;
+        }
         this.driveSpeed = speed;
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.D.S(this.driveSpeed);
         }
     }
@@ -99,20 +125,20 @@ public abstract class IZZYMove {
      */
     public void izzyMoveIncrement(int speed) {
         this.driveSpeed += speed;
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.D.SI(this.driveSpeed);
         }
     }
 
     public void eStop() {
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.D.powerDown();
             this.T.powerDown();
         }
     }
 
     public void resetKangaroo() {
-        synchronized (syncLock) {
+        synchronized (kangarooSyncLock) {
             this.D.powerDown();
             this.T.powerDown();
             this.D.start();
