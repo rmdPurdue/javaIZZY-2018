@@ -48,7 +48,6 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         log.debug("Hello From IZZY!");
-        log.debug("LOGGED");
         // Create single breaking point to halt all processing
         isRunning = new AtomicBoolean(true); // set to false stops all loops and ends program
 
@@ -169,24 +168,20 @@ public class Main {
         try {
             //When loops exit, program stops
             lineFollowLoop.join();
-            log.debug("GTYHJKI");
             motherUpdateLoop.join();
-            log.debug("FGHJKH");
             obstacleDetectionLoop.join();
-            log.debug("OIKJHG");
             obstacleDetectionProcess.destroy();
-            log.debug("CVBNMK");
             kangaroo.close();
-            log.debug("SDFJSDF");
         } catch (Exception e) {
             heartBeat.setErrorMessage("Critical Error. Could not close control threads. Power down IZZY.");
             heartBeat.setMessageType(MessageType.BROKEN);
             return;
         }
 
-        log.debug("UJKHBV");
         //Closes the receiver port to free up for next use
         IZZYOSCReceiverLineFollow.stopListening();
-        log.debug("HBVGFC");
+
+        //Disconnects listeners from GPIO board
+        gpio.shutdown();
     }
 }
