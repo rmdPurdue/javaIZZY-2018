@@ -49,14 +49,14 @@ public class IZZYMoveLineFollow extends IZZYMove {
      * IZZY adjusts movement based on sensor inputs and current speed value
      */
     public void followLine() throws EStopException, MotionStopException {
-        pidCalculations.adjustError();
+        pidCalculations.adjustErrorAnalog();
         pidCalculations.calculatePID();
         if (dangerApproaching.get()) {
             izzyMove(speedValue.get() / 2);
         } else {
             izzyMove(speedValue.get());
         }
-        izzyTurnIncrement((int) (-pidCalculations.getErrorAngle() + 0.5), speedValue.get()/2);
+        izzyTurnIncrement((int) (-pidCalculations.getErrorAngle() + 0.5), 90);
     }
 
     public void setSpeedValue(final int speed) {
@@ -114,6 +114,10 @@ public class IZZYMoveLineFollow extends IZZYMove {
 
     public void setSensorThresholds(int leftThreshold, int centerThreshold, int rightThreshold) {
         sensorArray.setSensorThresholds(leftThreshold, centerThreshold, rightThreshold);
+    }
+
+    public void setSensorRanges(int sensor0Min, int sensor0Max, int sensor1Min, int sensor1Max) {
+        sensorArray.setSensorRanges(sensor0Min, sensor0Max, sensor1Min, sensor1Max);
     }
 
     public void resetSystem() {

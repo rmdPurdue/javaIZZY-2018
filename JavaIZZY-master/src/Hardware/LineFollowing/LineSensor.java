@@ -6,8 +6,12 @@ import com.pi4j.io.gpio.GpioPinAnalogInput;
  * Represents one line sensor hardware object on IZZY
  */
 public class LineSensor {
+    private final static double CENTER_OF_SENSORS_TO_CENTER_OF_SENSOR = 2.3; // the distance (cm) from the center of izzy to the middle (max reading) of an inductive sensor. accounts for sensor width and spacing
     private int threshold;  // the analog value at which a sensor is considered to be reading a wire
                             // (ranges for analog feedback are roughly 3000 if reading - 18000 if not reading)
+    private int maxReading; // reading when wire is directly under sensor
+    private int minReading; // reading when wire is not detected at all by sensor
+    private double slope; // the slope of reading values
     private double reading;
     private final GpioPinAnalogInput analogInput; // the GPIO Pin that the sensor is located at
 
@@ -20,6 +24,9 @@ public class LineSensor {
     public LineSensor(final int threshold, final GpioPinAnalogInput analogInput) {
         this.threshold = threshold;
         this.analogInput = analogInput;
+        this.maxReading = 6000;
+        this.minReading = 17000;
+        updateSlope();
     }
 
     /**
@@ -63,5 +70,28 @@ public class LineSensor {
         return analogInput.getName();
     }
 
+    public int getMaxReading() {
+        return maxReading;
+    }
+
+    public void setMaxReading(int maxReading) {
+        this.maxReading = maxReading;
+    }
+
+    public int getMinReading() {
+        return minReading;
+    }
+
+    public void setMinReading(int minReading) {
+        this.minReading = minReading;
+    }
+
+    public double getSlope() {
+        return slope;
+    }
+
+    public void updateSlope() {
+        this.slope = CENTER_OF_SENSORS_TO_CENTER_OF_SENSOR / (maxReading - minReading);
+    }
 }
 

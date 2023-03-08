@@ -53,6 +53,11 @@ public class IZZYOSCReceiverLineFollow extends IZZYOSCReceiver {
         log.debug("ESTOP!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         eStopOSC(motherMessage);
     };
+    // Listen for sensor range adjustments
+    private final OSCListener sensorRangeListener = (time, motherMessage) -> {
+        log.debug("Sensor Ranges");
+        parseSensorRangeOSC(motherMessage);
+    };
 
     public IZZYOSCReceiverLineFollow(final AtomicBoolean isRunning, final IZZYMoveLineFollow izzyMoveLineFollow)
                                             throws SocketException {
@@ -64,6 +69,7 @@ public class IZZYOSCReceiverLineFollow extends IZZYOSCReceiver {
         super.addListener(STOP_PROCESSING.valueOf(), stopProcessingListener);
         super.addListener(RESET_SYSTEM.valueOf(), resetSystemListener);
         super.addListener(FOLLOW_LINE_ESTOP.valueOf(), eStopListener);
+        super.addListener(SET_SENSOR_RANGES.valueOf(), sensorRangeListener);
 
         this.isRunning = isRunning;
         this.izzyMoveLineFollow = izzyMoveLineFollow;
@@ -111,6 +117,16 @@ public class IZZYOSCReceiverLineFollow extends IZZYOSCReceiver {
         List<Object> msgArgs = msg.getArguments();
         if (msgArgs != null && msgArgs.size() == 3) {
             izzyMoveLineFollow.setSensorThresholds((int) msgArgs.get(0), (int) msgArgs.get(1), (int) msgArgs.get(2));
+        }
+    }
+
+    private void parseSensorRangeOSC(final OSCMessage msg) {
+        if (msg == null) {
+            return;
+        }
+        List<Object> msgArgs = msg.getArguments();
+        if (msgArgs != null && msgArgs.size() == 4) {
+            izzyMoveLineFollow.setSensorRanges((int) msgArgs.get(0), (int) msgArgs.get(1), (int) msgArgs.get(2), (int) msgArgs.get(3));
         }
     }
 

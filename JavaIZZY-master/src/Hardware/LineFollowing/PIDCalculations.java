@@ -1,17 +1,19 @@
 package Hardware.LineFollowing;
 
 import Exceptions.EStopException;
+import Exceptions.LostWireException;
 import Exceptions.MotionStopException;
 
 public class PIDCalculations {
-    private int error; //the stored value for the current error for the PID loop P function (in mm)
-    private int errorSum; //the combined value of all previous errors for the PID loop I function (in mm)
-    private int previousError; //the stored value of the previous error for the PID loop D function (in mm)
+    private double error; //the stored value for the current error for the PID loop P function (in mm)
+    private double errorSum; //the combined value of all previous errors for the PID loop I function (in mm)
+    private double previousError; //the stored value of the previous error for the PID loop D function (in mm)
     private double kp; //the ratio of the effect of the P value in the PID loop, adjusted for tuning
     private double ki; //the ratio of the effect of the I value in the PID loop, adjusted for tuning
     private double kd; //the ratio of the effect of the D value in the PID loop, adjusted for tuning
     private double pidValue; //the stored PID value for the horizontal error
     private final SensorArray sensorArray;
+    private int numberOfNoDetects;
 
     public PIDCalculations(final int kp, final int ki, final int kd, final SensorArray sensorArray) {
         this.kp = kp;
@@ -105,13 +107,25 @@ public class PIDCalculations {
         }
     }
 
+    public void adjustErrorAnalog() throws MotionStopException {
+        try {
+            error = sensorArray.calculateDistance();
+        } catch (LostWireException lwe) {
+            numberOfNoDetects++;
+        }
+        if (numberOfNoDetects >= 5) {
+            throw new MotionStopException("Lost Wire");
+        }
+        error = sensorArray.calculateDistance();
+    }
+
     /**
      * Calculates the PID value (horizontal error) based on sensor error values
      */
     public double calculatePID() {
         double proportional = getKp() * error;
         double integral = getKi() * errorSum;
-        double derivative = getKd() * previousError;
+        double derivative = getKd() * (error - previousError);
         pidValue = proportional + integral + derivative;
         errorSum += error;
         previousError = error;

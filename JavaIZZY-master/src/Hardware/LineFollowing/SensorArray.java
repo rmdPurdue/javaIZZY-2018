@@ -161,4 +161,26 @@ public class SensorArray
         sensorList.get(1).setThreshold(rightThreshold);
     }
 
+    public void setSensorRanges(int sensor0Min, int sensor0Max, int sensor1Min, int sensor1Max) {
+        if (sensorList.size() != 2) {
+            throw new RuntimeException("Sensor Array Size != Range Size");
+        }
+        sensorList.get(0).setMinReading(sensor0Min);
+        sensorList.get(0).setMaxReading(sensor0Max);
+        sensorList.get(1).setMinReading(sensor1Min);
+        sensorList.get(1).setMaxReading(sensor1Max);
+        sensorList.get(0).updateSlope();
+        sensorList.get(1).updateSlope();
+    }
+
+    /**
+     * Left = negative, Right = positive (horizontal error distance)
+     */
+    public double calculateDistance() {
+        double error = 0.0;
+        error -= sensorList.get(0).getSlope() * sensorList.get(0).getSensorReading();
+        error += sensorList.get(1).getSlope() * sensorList.get(1).getSensorReading();
+        return error;
+    }
+
 }

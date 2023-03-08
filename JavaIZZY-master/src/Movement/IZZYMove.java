@@ -148,8 +148,8 @@ public abstract class IZZYMove {
             double lineAngle = Math.PI * (systemRad * 2) / readableDrive * lineDrive;
             this.D.units((int) (readableDrive + 0.5) + " mm = " + (int) (lineDrive + 0.5) + " lines");
             this.T.units("360 degrees = " + (int) (lineAngle + 0.5) + " lines");
-            this.D.S(0);
-            this.T.P(0);
+//            this.D.S(0);
+//            this.T.P(0);
         }
     }
 

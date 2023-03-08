@@ -13,7 +13,8 @@ public enum OSCAddresses {
     FOLLOW_LINE_THRESHOLD("/IZZY/FollowLineThreshold"),
     STOP_PROCESSING("/IZZY/StopProcessing"),
     RESET_SYSTEM("/IZZY/ResetSystem"),
-    FOLLOW_LINE_ESTOP("/IZZY/eStop");
+    FOLLOW_LINE_ESTOP("/IZZY/eStop"),
+    SET_SENSOR_RANGES("/IZZY/ranges");
 
     private String address;
 
