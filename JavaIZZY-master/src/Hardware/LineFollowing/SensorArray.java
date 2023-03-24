@@ -1,5 +1,7 @@
 package Hardware.LineFollowing;
 
+import Exceptions.EStopException;
+
 import java.util.ArrayList;
 
 /**
@@ -94,7 +96,7 @@ public class SensorArray
     /**
      * Sets the sensorState array based on the values of all LineSensors in the SensorArray.
      */
-    public int[] readSensorsAnalog() {
+    public int[] readSensorsAnalog() throws EStopException {
         for (int i = 0; i < sensorList.size(); i++) {
 //            System.out.println(sensorList.get(i).getName() + " = " + sensorList.get(i).getSensorReading());
             analogArray[i] = (int) sensorList.get(i).getSensorReading();
@@ -106,7 +108,7 @@ public class SensorArray
     /**
      * Sets the sensorState array based on the values of all LineSensors in the SensorArray.
      */
-    public boolean[] readSensorsBoolean() {
+    public boolean[] readSensorsBoolean() throws EStopException {
         for (int i = 0; i < sensorList.size(); i++) {
 //            System.out.println(sensorList.get(i).getName() + " = " + sensorList.get(i).getSensorReading());
             analogArray[i] = (int) sensorList.get(i).getSensorReading();
@@ -176,7 +178,7 @@ public class SensorArray
     /**
      * Left = negative, Right = positive (horizontal error distance)
      */
-    public double calculateDistance() {
+    public double calculateDistance() throws EStopException {
         double error = 0.0;
         error -= sensorList.get(0).getSlope() * sensorList.get(0).getSensorReading();
         error += sensorList.get(1).getSlope() * sensorList.get(1).getSensorReading();

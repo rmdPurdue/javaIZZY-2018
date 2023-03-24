@@ -7,7 +7,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="pi4j.gpio.extension2" level="project" />
     <orderEntry type="library" name="pi4j.core2" level="project" />
     <orderEntry type="library" name="apache.logging.log4j.api" level="project" />
     <orderEntry type="library" name="apache.logging.log4j.core" level="project" />
@@ -20,5 +19,13 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="pi4j.plugin.pigpio" level="project" />
+    <orderEntry type="library" name="pi4j.core" level="project" />
+    <orderEntry type="library" name="pi4j.library.linuxfs" level="project" />
+    <orderEntry type="library" name="pi4j.ktx" level="project" />
+    <orderEntry type="library" name="pi4j.library.pigpio" level="project" />
+    <orderEntry type="library" name="pi4j.plugin.linuxfs" level="project" />
+    <orderEntry type="library" name="pi4j.plugin.raspberrypi" level="project" />
+    <orderEntry type="library" name="slf4j.api" level="project" />
   </component>
 </module>

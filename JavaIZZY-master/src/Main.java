@@ -1,3 +1,5 @@
+import Hardware.AD1115.ADS1115;
+import Hardware.AD1115.ADS1115Builder;
 import Hardware.LineFollowing.DriveReadings;
 import Hardware.LineFollowing.LineSensor;
 import Hardware.LineFollowing.SensorArray;
@@ -12,15 +14,18 @@ import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSimpleChannel;
 import ControlThreads.LineFollowControlThread;
 import ControlThreads.MotherValuesControlThread;
 import ObstacleDetection.ObstacleDetectionController;
-import com.pi4j.gpio.extension.ads.ADS1115GpioProvider;
-import com.pi4j.gpio.extension.ads.ADS1115Pin;
-import com.pi4j.gpio.extension.ads.ADS1x15GpioProvider.ProgrammableGainAmplifierValue;
-import com.pi4j.io.gpio.GpioController;
-import com.pi4j.io.gpio.GpioFactory;
-import com.pi4j.io.i2c.I2CBus;
+import com.pi4j.Pi4J;
+import com.pi4j.context.Context;
+import com.pi4j.library.pigpio.PiGpio;
+import com.pi4j.plugin.linuxfs.provider.i2c.LinuxFsI2CProvider;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalInputProvider;
+import com.pi4j.plugin.pigpio.provider.gpio.digital.PiGpioDigitalOutputProvider;
+import com.pi4j.plugin.pigpio.provider.pwm.PiGpioPwmProvider;
+import com.pi4j.plugin.pigpio.provider.serial.PiGpioSerialProvider;
+import com.pi4j.plugin.pigpio.provider.spi.PiGpioSpiProvider;
+import com.pi4j.plugin.raspberrypi.platform.RaspberryPiPlatform;
 import lombok.extern.log4j.Log4j2;
 
-import java.io.File;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -66,44 +71,78 @@ public class Main {
         }
 
         //start obstacle detection code at program start
-        ProcessBuilder pb = new ProcessBuilder("./izzy-obstacle.sh").inheritIO();
-        pb.directory(new File("/home/pi"));
-        try {
-            obstacleDetectionProcess = pb.start();
-        } catch (Exception e) {
-            heartBeat.setErrorMessage("Invalid Operation. Could not start obstacle detection.");
-            heartBeat.setMessageType(MessageType.SETUP_ERROR);
-            return;
-        }
+        // TODO: start python program
+//        ProcessBuilder pb = new ProcessBuilder("./izzy-obstacle.sh").inheritIO();
+//        pb.directory(new File("/home/pi"));
+//        try {
+//            obstacleDetectionProcess = pb.start();
+//        } catch (Exception e) {
+//            heartBeat.setErrorMessage("Invalid Operation. Could not start obstacle detection.");
+//            heartBeat.setMessageType(MessageType.SETUP_ERROR);
+//            return;
+//        }
 
-        // create gpio controller
-        final GpioController gpio = GpioFactory.getInstance();
-        final ADS1115GpioProvider gpioProvider;
+        log.info("1");
+
+        Context context = null;
+        ADS1115 ads1115 = null;
 
         try {
-            // create custom ADS1115 GPIO provider
-            gpioProvider = new ADS1115GpioProvider(I2CBus.BUS_1,
-                    ADS1115GpioProvider.ADS1115_ADDRESS_0x49);
-            gpioProvider.setProgrammableGainAmplifier(ProgrammableGainAmplifierValue.PGA_6_144V, ADS1115Pin.ALL);
+            // create ADS1115 resource
+            context = Pi4J.newAutoContext();
+            log.info("ADS1115Test started ...");
+            ads1115 = ADS1115Builder.get().context(context).build();
+            for (int i = 0; i < 10; i++) {
+                double aIn0 = ads1115.getAIn0();
+                double aIn1 = ads1115.getAIn1();
+                double aIn2 = ads1115.getAIn2();
+                double aIn3 = ads1115.getAIn3();
+                log.info("[{}] Voltages: a0={} V, a1={} V, a2={} V, a3={} V",
+                        i, String.format("%.3f", aIn0), String.format("%.3f", aIn1), String.format("%.3f", aIn2), String.format("%.3f", aIn3));
+                Thread.sleep(500);
+            }
+            log.info("ADS1115Test done.");
         } catch (Exception e) {
+            log.error("ADS115 Unable to Initialize");
+            log.error(e.getLocalizedMessage());
             heartBeat.setErrorMessage("Invalid Operation. Could not setup GPIO.");
             heartBeat.setMessageType(MessageType.SETUP_ERROR);
             return;
         }
 
+//        final ButtonPanel buttonPanel = new ButtonPanel(gpio);
+        log.info("2");
+        System.exit(100);
+
         //Initialize sensors and map sensors to GPIO pins
-        LineSensor sensor1 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
-                ADS1115Pin.INPUT_A2, "DistanceSensor-A2")); // Left
-        LineSensor sensor2 = new LineSensor(14950, gpio.provisionAnalogInputPin(gpioProvider,
-                ADS1115Pin.INPUT_A0, "DistanceSensor-A0")); // Right
+        LineSensor sensor1 = new LineSensor(14950, 2, "DistanceSensor-A2", ads1115); // Left
+        LineSensor sensor2 = new LineSensor(14950, 0, "DistanceSensor-A0", ads1115); // Right
 
         //Create array of mapped sensors
         sensorArray = new SensorArray(88, 13, 17);
         sensorArray.addSensor(sensor1); // Left
         sensorArray.addSensor(sensor2); // Right
 
+        PiGpio piGpio = PiGpio.newNativeInstance();
+        Context pi4j = Pi4J.newContextBuilder()
+                .noAutoDetect()
+                .add(new RaspberryPiPlatform() {
+                    @Override
+                    protected String[] getProviders() {
+                        return new String[]{};
+                    }
+                })
+                .add(PiGpioDigitalInputProvider.newInstance(piGpio),
+                        PiGpioDigitalOutputProvider.newInstance(piGpio),
+                        PiGpioPwmProvider.newInstance(piGpio),
+                        PiGpioSerialProvider.newInstance(piGpio),
+                        PiGpioSpiProvider.newInstance(piGpio),
+                        LinuxFsI2CProvider.newInstance()
+                )
+                .build();
+
         //Connect to IZZY's motion controller and establish channels
-        kangaroo = new KangarooSerial();
+        kangaroo = new KangarooSerial(pi4j);
         kangaroo.open(); // opens a serial connection with motion controller
         D = new KangarooSimpleChannel(kangaroo, 'D'); // drive channel. forward and backward speed
         T = new KangarooSimpleChannel(kangaroo, 'T'); // turn channel. rotation angle
@@ -182,6 +221,10 @@ public class Main {
         IZZYOSCReceiverLineFollow.stopListening();
 
         //Disconnects listeners from GPIO board
-        gpio.shutdown();
+        try {
+            ads1115.close();
+        } catch (Exception e) {
+            log.error("unable to close ads115");
+        }
     }
 }

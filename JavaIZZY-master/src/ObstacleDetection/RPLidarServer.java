@@ -27,6 +27,9 @@ public class RPLidarServer {
         this.incoming = null;
     }
 
+    /**
+     * Closes all ports used for obstacle detection communication
+     */
     public void stopServer() {
 
         try {
@@ -43,7 +46,15 @@ public class RPLidarServer {
         }
     }
 
-    public short[] receiveMessage() {
+    /**
+     * Accepts an array of 361 length with distance measurements at each angle. The 361 value is
+     * a set of flagged zones. There are 8 zones clockwise starting at center. The most significant bits
+     * indicate an object in the respective zone within 400-200mm. The least significant bits indicate
+     * an object in the respective zone within 0-200mm.
+     *
+     * @return Array of size 361 with 0-360 representing distances. 361 representing flagged zones
+     */
+    public short[] receiveRawDataMessage() {
         try {
             byte[] buf = new byte[724];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);

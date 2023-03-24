@@ -101,7 +101,7 @@ public class IZZYMoveLineFollow extends IZZYMove {
         return pidCalculations.getKd();
     }
 
-    public int[] getSensorsAnalog() {
+    public int[] getSensorsAnalog() throws EStopException {
         if (!isMoving.get()) {
             return sensorArray.readSensorsAnalog();
         }

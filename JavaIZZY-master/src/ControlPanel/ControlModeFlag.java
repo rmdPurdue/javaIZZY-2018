@@ -9,7 +9,7 @@ import java.util.EnumSet;
  * @date 12/4/2018
  */
 public enum ControlModeFlag {
-    MOTHER_MODE,
+    OBSTACLE_AVOIDANCE,
     LINE_FOLLOWING,
     RFID_TRACKING,
     OBSTACLE_DETECTION,

@@ -1,5 +1,6 @@
 package MotherCommunication.LineFollowing;
 
+import Exceptions.EStopException;
 import Hardware.LineFollowing.DriveReadings;
 import MotherCommunication.Heartbeat.HeartbeatResponder;
 import MotherCommunication.PortEnumerations;
@@ -27,7 +28,7 @@ public class IZZYOSCSenderLineFollow {
         driveReadings.startWheelReadingLoop();
     }
 
-    public void sendData() throws IOException {
+    public void sendData() throws IOException, EStopException {
         OSCMessage outgoingMessage = new OSCMessage();
         outgoingMessage.setAddress("/IZZYMother/Status");
         outgoingMessage.addArgument(izzyMove.getSpeedValue());

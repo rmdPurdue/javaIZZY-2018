@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="pi4j.plugin.pigpio" type="repository">
+    <properties maven-id="com.pi4j:pi4j-plugin-pigpio:2.3.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-plugin-pigpio-2.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-library-pigpio-2.3.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/slf4j-api-1.7.32.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/pi4j-core-2.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

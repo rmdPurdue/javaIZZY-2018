@@ -1,6 +1,7 @@
 package Hardware.LineFollowing;
 
-import com.pi4j.io.gpio.GpioPinAnalogInput;
+import Exceptions.EStopException;
+import Hardware.AD1115.ADS1115;
 
 /**
  * Represents one line sensor hardware object on IZZY
@@ -13,19 +14,25 @@ public class LineSensor {
     private int minReading; // reading when wire is not detected at all by sensor
     private double slope; // the slope of reading values
     private double reading;
-    private final GpioPinAnalogInput analogInput; // the GPIO Pin that the sensor is located at
+    private final int ads1115PinNumber; // the GPIO Pin that the sensor is located at
+    private final String name;
+    private final ADS1115 ads1115; // the GPIO provider
 
     /**
      * Constructor for a LineSensor Object
      *
      * @param threshold the analog value at which a sensor is considered to be reading a wire
-     * @param analogInput the GPIO Pin that the sensor is located at
+     * @param ads1115PinNumber the Pin Number that the sensor is located at on the ADS1115 (0-3)
+     * @param name The label for the sensor
+     * @param ads1115 The ADS1115 provider
      */
-    public LineSensor(final int threshold, final GpioPinAnalogInput analogInput) {
+    public LineSensor(final int threshold, final int ads1115PinNumber, final String name, final ADS1115 ads1115) {
         this.threshold = threshold;
-        this.analogInput = analogInput;
+        this.ads1115PinNumber = ads1115PinNumber;
         this.maxReading = 6000;
         this.minReading = 17000;
+        this.name = name;
+        this.ads1115 = ads1115;
         updateSlope();
     }
 
@@ -52,8 +59,23 @@ public class LineSensor {
      *
      * @return double representing analog value of sensor (roughly 3000 if reading - 18000 if not reading)
      */
-    public double getSensorReading() {
-        reading = this.analogInput.getValue();
+    public double getSensorReading() throws EStopException {
+        switch (ads1115PinNumber) {
+            case 0:
+                reading = this.ads1115.getAIn0();
+                break;
+            case 1:
+                reading = this.ads1115.getAIn1();
+                break;
+            case 2:
+                reading = this.ads1115.getAIn2();
+                break;
+            case 3:
+                reading = this.ads1115.getAIn3();
+                break;
+            default:
+                throw new EStopException("Unable to initialize ADS115 - Bad Pin Number");
+        }
         return reading;
     }
 
@@ -67,7 +89,7 @@ public class LineSensor {
     }
 
     public String getName() {
-        return analogInput.getName();
+        return this.name;
     }
 
     public int getMaxReading() {

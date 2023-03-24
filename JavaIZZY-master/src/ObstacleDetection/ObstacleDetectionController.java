@@ -25,7 +25,7 @@ public class ObstacleDetectionController implements Runnable {
     @Override
     public void run() {
         while(isRunning.get()) {
-            short[] receivedMessage = server.receiveMessage();
+            short[] receivedMessage = server.receiveRawDataMessage();
             if (receivedMessage == null) {
                 continue;
             }

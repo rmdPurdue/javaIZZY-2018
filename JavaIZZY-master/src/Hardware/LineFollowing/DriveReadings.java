@@ -1,8 +1,7 @@
 package Hardware.LineFollowing;
 
 import Hardware.Kanagaroo.KangarooSimpleSerial.KangarooSimpleChannel;
-import com.pi4j.io.serial.SerialDataEvent;
-import com.pi4j.io.serial.SerialDataEventListener;
+import Hardware.Kanagaroo.SerialDataEventListener;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
@@ -76,36 +75,31 @@ public class DriveReadings implements SerialDataEventListener {
     }
 
     @Override
-    public void dataReceived(SerialDataEvent serialDataEvent) {
-        try {
-            String data = serialDataEvent.getAsciiString();
-            Pattern pattern = Pattern.compile("([DTdt]),([SPsp])(-?\\d+)");
-            String[] readings = data.split("\n");
-            for (String reading : readings) {
-                Matcher matcher = pattern.matcher(reading);
-                if (matcher.find()) {
-                    if (matcher.group(1).equals("D") || matcher.group(1).equals("d")) {
-                        if (matcher.group(2).equals("S") || matcher.group(2).equals("s")) {
-                            setDriveS(Integer.parseInt(matcher.group(3)));
-                        } else { // P
-                            setDriveP(Integer.parseInt(matcher.group(3)));
-                        }
-                    } else { // T
-                        if (matcher.group(2).equals("S") || matcher.group(2).equals("s")) {
-                            setTurnS(Integer.parseInt(matcher.group(3)));
-                            if (isRunning.get()) {
-                                startWheelReadingLoop();
-                            }
-                        } else { // P
-                            setTurnP(Integer.parseInt(matcher.group(3)));
-                        }
+    public void dataReceived(String data) {
+        Pattern pattern = Pattern.compile("([DTdt]),([SPsp])(-?\\d+)");
+        String[] readings = data.split("\n");
+        for (String reading : readings) {
+            Matcher matcher = pattern.matcher(reading);
+            if (matcher.find()) {
+                if (matcher.group(1).equals("D") || matcher.group(1).equals("d")) {
+                    if (matcher.group(2).equals("S") || matcher.group(2).equals("s")) {
+                        setDriveS(Integer.parseInt(matcher.group(3)));
+                    } else { // P
+                        setDriveP(Integer.parseInt(matcher.group(3)));
                     }
-                } else {
-                    log.info("Bad data from Kangaroo: {}", data);
+                } else { // T
+                    if (matcher.group(2).equals("S") || matcher.group(2).equals("s")) {
+                        setTurnS(Integer.parseInt(matcher.group(3)));
+                        if (isRunning.get()) {
+                            startWheelReadingLoop();
+                        }
+                    } else { // P
+                        setTurnP(Integer.parseInt(matcher.group(3)));
+                    }
                 }
+            } else {
+                log.info("Bad data from Kangaroo: {}", data);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

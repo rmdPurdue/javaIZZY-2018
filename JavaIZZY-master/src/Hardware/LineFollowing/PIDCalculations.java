@@ -107,7 +107,7 @@ public class PIDCalculations {
         }
     }
 
-    public void adjustErrorAnalog() throws MotionStopException {
+    public void adjustErrorAnalog() throws MotionStopException, EStopException {
         try {
             error = sensorArray.calculateDistance();
         } catch (LostWireException lwe) {
