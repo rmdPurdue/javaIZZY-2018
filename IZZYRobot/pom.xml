@@ -74,21 +74,6 @@
             <version>2.1.1</version>
         </dependency>
 
-<!--        &lt;!&ndash; Pi4J Mock Platform &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>com.pi4j</groupId>-->
-<!--            <artifactId>pi4j-plugin-mock</artifactId>-->
-<!--            <version>${pi4j.version}</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-
-<!--        &lt;!&ndash; PicoCLI &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>info.picocli</groupId>-->
-<!--            <artifactId>picocli</artifactId>-->
-<!--            <version>${picocli.version}</version>-->
-<!--        </dependency>-->
-
         <!-- JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
