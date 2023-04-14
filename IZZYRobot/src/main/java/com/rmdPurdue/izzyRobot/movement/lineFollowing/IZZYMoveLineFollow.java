@@ -128,6 +128,6 @@ public class IZZYMoveLineFollow extends IZZYMove {
 
     public void stop() {
         izzyMove(0);
-        izzyTurn((int) (-pidCalculations.getErrorAngle() + 0.5));
+//        izzyTurn((int) (-pidCalculations.getErrorAngle() + 0.5));
     }
 }

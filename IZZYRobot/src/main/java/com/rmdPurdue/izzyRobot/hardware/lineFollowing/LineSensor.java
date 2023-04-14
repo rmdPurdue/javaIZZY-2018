@@ -2,11 +2,14 @@ package com.rmdPurdue.izzyRobot.hardware.lineFollowing;
 
 import com.rmdPurdue.izzyRobot.exceptions.EStopException;
 import com.rmdPurdue.izzyRobot.hardware.ad1115.ADS1115;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Represents one line sensor hardware object on IZZY
  */
 public class LineSensor {
+    private static final Logger log = LogManager.getLogger(LineSensor.class);
     private final static double CENTER_OF_SENSORS_TO_CENTER_OF_SENSOR = 2.3; // the distance (cm) from the center of izzy to the middle (max reading) of an inductive sensor. accounts for sensor width and spacing
     private int threshold;  // the analog value at which a sensor is considered to be reading a wire
                             // (ranges for analog feedback are roughly 3000 if reading - 18000 if not reading)
@@ -76,7 +79,8 @@ public class LineSensor {
             default:
                 throw new EStopException("Unable to initialize ADS115 - Bad Pin Number");
         }
-        return reading;
+        log.debug("Reading " + ads1115PinNumber + ": " + reading);
+        return reading * 10000;
     }
 
     /**

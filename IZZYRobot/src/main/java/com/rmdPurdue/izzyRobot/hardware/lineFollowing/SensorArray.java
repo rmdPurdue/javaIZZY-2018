@@ -142,12 +142,11 @@ public class SensorArray
      * @param rightThreshold analog value of threshold for right sensor
      */
     public void setSensorThresholds(int leftThreshold, int centerThreshold, int rightThreshold) {
-        if (sensorList.size() != 3) {
+        if (sensorList.size() != 2) {
             throw new RuntimeException("Sensor Array Size != Threshold Size");
         }
         sensorList.get(0).setThreshold(leftThreshold);
-        sensorList.get(1).setThreshold(centerThreshold);
-        sensorList.get(2).setThreshold(rightThreshold);
+        sensorList.get(1).setThreshold(rightThreshold);
     }
 
     /**

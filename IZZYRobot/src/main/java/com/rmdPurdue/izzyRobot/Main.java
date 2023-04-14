@@ -119,8 +119,8 @@ public class Main {
         }
 
         //Initialize sensors and map sensors to GPIO pins
-        LineSensor sensor1 = new LineSensor(14950, 2, "DistanceSensor-A2", ads1115); // Left
-        LineSensor sensor2 = new LineSensor(14950, 0, "DistanceSensor-A0", ads1115); // Right
+        LineSensor sensor1 = new LineSensor(32000, 2, "DistanceSensor-A2", ads1115); // Left
+        LineSensor sensor2 = new LineSensor(32000, 0, "DistanceSensor-A0", ads1115); // Right
 
         //Create array of mapped sensors
         sensorArray = new SensorArray(88, 13, 17);

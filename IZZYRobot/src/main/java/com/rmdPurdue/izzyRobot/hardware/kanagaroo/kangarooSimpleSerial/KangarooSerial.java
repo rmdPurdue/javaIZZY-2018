@@ -38,7 +38,7 @@ public class KangarooSerial implements AutoCloseable {
                 .flowControl(FlowControl.NONE)
                 .id("my-serial")
                 .device("/dev/ttyS0")
-                .provider("pi-gpio-serial")
+                .provider("pigpio-serial")
                 .build());
         this.serialReader = new SerialReader(serial);
         this.serialReaderThread = new Thread(serialReader);

@@ -1,6 +1,5 @@
 package com.rmdPurdue.izzyRobot.controlThreads;
 
-import com.rmdPurdue.izzyRobot.Main;
 import com.rmdPurdue.izzyRobot.motherCommunication.heartbeat.HeartbeatResponder;
 import com.rmdPurdue.izzyRobot.motherCommunication.heartbeat.HeartbeatResponseListener;
 import com.rmdPurdue.izzyRobot.motherCommunication.heartbeat.MotherStatus;
@@ -41,7 +40,7 @@ public class LineFollowControlThread implements Runnable, HeartbeatResponseListe
                         izzyMove.followLine();
                     } else {
                         izzyMove.izzyMove(0);
-                        izzyMove.izzyTurnFreeze();
+//                        izzyMove.izzyTurnFreeze();
                     }
                 } catch (final Exception e) {
                     log.error(e.getMessage());
