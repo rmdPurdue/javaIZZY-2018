@@ -26,20 +26,25 @@ public class ObstacleDetectionController implements Runnable {
     @Override
     public void run() {
         while(isRunning.get()) {
-            short[] receivedMessage = server.receiveRawDataMessage();
+            ObstacleMessage receivedMessage = server.receiveRawDataMessage();
             if (receivedMessage == null) {
                 continue;
             }
-            short flaggedMessage = receivedMessage[361];
-            System.out.println(Arrays.toString(receivedMessage));
-            //int unsigned = Short.toUnsignedInt(flaggedMessage);
-
-//            if ((unsigned & 255) > 0) { // if any of the first 8 bits are 1 (detected within 200mm)
-//                izzyMove.setIsMoving(false);
-//                log.info("STOPPED");
-//            }
-//            // if any of the second 8 bits are 1 (detected within 400mm)
-//            dangerApproaching.set((unsigned & 65280) > 0);
+            System.out.println(receivedMessage);
+            //TODO: React to message (move izzy accordingly)
+            /*
+            Steps:
+                if (not acknowledged && obstacle detected)
+                    stop followLine();
+                    acknowledge; --> will involve sending message back. I'd extend RPLidarServer class to include this
+                else if (acknowledged && obstacle detected)
+                    izzyTurnIncrement(90 - angle) --> trying to get object at 90 degrees
+                    if (lineDetected)
+                        sendLineDetectedMessage();
+                else if (no obstacle detected)
+                    continue;
+                    //TODO: figure out what happens if we don't have line, but we lose obstacle (actor walks away)
+             */
         }
         server.stopServer();
     }
