@@ -4,8 +4,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -19,6 +23,10 @@ import java.nio.ByteOrder;
 public class RPLidarServer {
     private static final Logger log = LogManager.getLogger(RPLidarServer.class);
     private static final int BYTES_PER_DOUBLE = 7;
+    private static final String LOCAL_IP_ADDRESS = "127.0.0.1";
+    private static final int OBSTACLE_REC_PORT = 6911;
+    private static final int ACKNOWLEDGED_INDEX = 9;
+    private static final int DETECTED_INDEX = 10;
 
     private final DatagramSocket s;
     private Socket incoming;
@@ -78,5 +86,31 @@ public class RPLidarServer {
         return null;
     }
 
+    public void sendAcknowledgedMessage() {
+        sendMessageToObstacleDetection(ACKNOWLEDGED_INDEX);
+    }
+
+    public void sendDetectedMessage() {
+        sendMessageToObstacleDetection(DETECTED_INDEX);
+    }
+
+    private void sendMessageToObstacleDetection(int detectedIndex) {
+        try {
+            DatagramSocket s = new DatagramSocket(6911, InetAddress.getByName(LOCAL_IP_ADDRESS));
+            try {
+                DatagramSocket socket = new DatagramSocket();
+                InetAddress address = InetAddress.getByName(LOCAL_IP_ADDRESS);
+                int port = 6911;
+                byte[] byteBuffer = new byte[16];
+                byteBuffer[detectedIndex] = 1;
+                DatagramPacket packet = new DatagramPacket(byteBuffer, 16, address, port);
+                socket.send(packet);
+            } finally {
+                s.close();
+            }
+        } catch (IOException ioexc) {
+            ioexc.printStackTrace();
+        }
+    }
 
 }

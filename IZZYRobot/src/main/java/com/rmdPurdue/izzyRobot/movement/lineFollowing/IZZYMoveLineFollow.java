@@ -19,6 +19,7 @@ public class IZZYMoveLineFollow extends IZZYMove {
     private final SensorArray sensorArray;
     private final AtomicBoolean dangerApproaching; // triggered if object getting close
     private final DriveReadings driveReadings;
+    private final AtomicBoolean stopFollowLine;
 
     /**
      * Creates instance of IZZYMovement.IZZYMove class
@@ -43,12 +44,16 @@ public class IZZYMoveLineFollow extends IZZYMove {
         this.pidCalculations = new PIDCalculations(1, 0, 0, sensorArray);
         this.dangerApproaching = dangerApproaching;
         this.driveReadings = driveReadings;
+        this.stopFollowLine = new AtomicBoolean(false);
     }
 
     /**
      * IZZY adjusts movement based on sensor inputs and current speed value
      */
     public void followLine() throws EStopException, MotionStopException {
+        if (stopFollowLine.get()) {
+            return;
+        }
         pidCalculations.adjustErrorAnalog();
         pidCalculations.calculatePID();
         if (dangerApproaching.get()) {
@@ -57,6 +62,14 @@ public class IZZYMoveLineFollow extends IZZYMove {
             izzyMove(speedValue.get());
         }
         izzyTurnIncrement((int) (-pidCalculations.getErrorAngle() + 0.5), 90);
+    }
+
+    public boolean isLineDetected() throws EStopException {
+        return pidCalculations.isLineDetected();
+    }
+
+    public void setStopFollowLine(boolean status) {
+        this.stopFollowLine.set(status);
     }
 
     public void setSpeedValue(final int speed) {

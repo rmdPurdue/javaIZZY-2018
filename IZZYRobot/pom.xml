@@ -11,16 +11,16 @@
     <properties>
 
         <!-- Project Properties -->
-        <example.launcher.class>com.rmdPurdue.izzyRobot/com.rmdPurdue.izzyRobot.Main</example.launcher.class>
-        <example.launcher.args/>
+        <izzy.launcher.class>com.rmdPurdue.izzyRobot/com.rmdPurdue.izzyRobot.Main</izzy.launcher.class>
+        <izzy.launcher.args/>
 
         <!-- Raspberry Remote Deployment -->
-        <example.remote.host/>
-        <example.remote.port>22</example.remote.port>
-        <example.remote.username>IZZY</example.remote.username>
-        <example.remote.password>unsecure</example.remote.password>
-        <example.remote.target>/home/IZZY/deployment</example.remote.target>
-        <example.remote.jvmOptions/>
+        <izzy.remote.host/>
+        <izzy.remote.port>22</izzy.remote.port>
+        <izzy.remote.username>IZZY</izzy.remote.username>
+        <izzy.remote.password>unsecure</izzy.remote.password>
+        <izzy.remote.target>/home/IZZY/deployment</izzy.remote.target>
+        <izzy.remote.jvmOptions/>
 
         <!-- Project Dependencies -->
         <java.version>11</java.version>
@@ -142,7 +142,7 @@
                     </annotationProcessorPaths>
                     <compilerArgs>
                         <!-- Used by PicoCLI annotation processor -->
-                        <arg>-Aproject=${example.launcher.class}</arg>
+                        <arg>-Aproject=${izzy.launcher.class}</arg>
                     </compilerArgs>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -228,7 +228,7 @@
             <id>local-run</id>
             <activation>
                 <property>
-                    <name>!example.remote.host</name>
+                    <name>!izzy.remote.host</name>
                 </property>
             </activation>
             <build>
@@ -246,7 +246,7 @@
                         </executions>
                         <configuration>
                             <executable>sudo</executable>
-                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${example.launcher.class} ${example.launcher.args}</commandlineArgs>
+                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${izzy.launcher.class} ${izzy.launcher.args}</commandlineArgs>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -258,7 +258,7 @@
             <id>remote-run</id>
             <activation>
                 <property>
-                    <name>example.remote.host</name>
+                    <name>izzy.remote.host</name>
                 </property>
             </activation>
             <build>
@@ -276,22 +276,22 @@
                                 <configuration>
                                     <target>
                                         <!-- Ensure target directory exists on Raspberry -->
-                                        <sshexec host="${example.remote.host}" port="${example.remote.port}"
-                                                 username="${example.remote.username}" password="${example.remote.password}"
-                                                 trust="true" command="mkdir --parents ${example.remote.target}"/>
+                                        <sshexec host="${izzy.remote.host}" port="${izzy.remote.port}"
+                                                 username="${izzy.remote.username}" password="${izzy.remote.password}"
+                                                 trust="true" command="mkdir --parents ${izzy.remote.target}"/>
 
                                         <!-- Transfer distribution folder to Raspberry via SCP -->
                                         <scp trust="true"
-                                             todir="${example.remote.username}:${example.remote.password}@${example.remote.host}:${example.remote.target}"
-                                             port="${example.remote.port}">
+                                             todir="${izzy.remote.username}:${izzy.remote.password}@${izzy.remote.host}:${izzy.remote.target}"
+                                             port="${izzy.remote.port}">
                                             <fileset dir="${project.build.directory}/distribution"/>
                                         </scp>
 
                                         <!-- Run application on Raspberry Pi -->
-                                        <sshexec host="${example.remote.host}" port="${example.remote.port}"
-                                                 username="${example.remote.username}" password="${example.remote.password}" trust="true"
+                                        <sshexec host="${izzy.remote.host}" port="${izzy.remote.port}"
+                                                 username="${izzy.remote.username}" password="${izzy.remote.password}" trust="true"
                                                  failonerror="false" usepty="true" useSystemIn="true"
-                                                 command="sudo java ${example.remote.jvmOptions} --module-path ${example.remote.target} --module ${example.launcher.class} ${example.launcher.args}"/>
+                                                 command="sudo java ${izzy.remote.jvmOptions} --module-path ${izzy.remote.target} --module ${izzy.launcher.class} ${izzy.launcher.args}"/>
                                     </target>
                                 </configuration>
                             </execution>
@@ -312,9 +312,9 @@
         <profile>
             <id>debug</id>
             <properties>
-                <example.remote.jvmOptions>
+                <izzy.remote.jvmOptions>
                     -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005
-                </example.remote.jvmOptions>
+                </izzy.remote.jvmOptions>
             </properties>
         </profile>
     </profiles>

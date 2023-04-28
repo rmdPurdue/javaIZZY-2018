@@ -1,5 +1,6 @@
 package com.rmdPurdue.izzyRobot.obstacleDetection;
 
+import com.rmdPurdue.izzyRobot.exceptions.EStopException;
 import com.rmdPurdue.izzyRobot.movement.lineFollowing.IZZYMoveLineFollow;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,20 +32,23 @@ public class ObstacleDetectionController implements Runnable {
                 continue;
             }
             System.out.println(receivedMessage);
-            //TODO: React to message (move izzy accordingly)
-            /*
-            Steps:
-                if (not acknowledged && obstacle detected)
-                    stop followLine();
-                    acknowledge; --> will involve sending message back. I'd extend RPLidarServer class to include this
-                else if (acknowledged && obstacle detected)
-                    izzyTurnIncrement(90 - angle) --> trying to get object at 90 degrees
-                    if (lineDetected)
-                        sendLineDetectedMessage();
-                else if (no obstacle detected)
-                    continue;
-                    //TODO: figure out what happens if we don't have line, but we lose obstacle (actor walks away)
-             */
+
+            if (!receivedMessage.isObstacleAcknowledged() && receivedMessage.isObstacleDetected()) {
+                izzyMove.setStopFollowLine(true);
+                server.sendAcknowledgedMessage();
+                izzyMove.izzyTurnIncrement((int) (90 - receivedMessage.getAngle() + 0.5));
+            } else if (receivedMessage.isObstacleAcknowledged() && receivedMessage.isObstacleDetected()) {
+                izzyMove.izzyTurnIncrement((int) (90 - receivedMessage.getAngle() + 0.5));
+                try {
+                    if (izzyMove.isLineDetected()) {
+                        server.sendDetectedMessage();
+                        izzyMove.setStopFollowLine(false);
+                    }
+                } catch (EStopException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            //TODO: figure out what happens if we don't have line, but we lose obstacle (actor walks away)
         }
         server.stopServer();
     }

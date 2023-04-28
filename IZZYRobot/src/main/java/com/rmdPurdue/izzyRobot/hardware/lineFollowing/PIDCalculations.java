@@ -85,6 +85,11 @@ public class PIDCalculations {
         return pidValue;
     }
 
+    public boolean isLineDetected() throws EStopException {
+        final boolean[] signalArray = sensorArray.readSensorsBoolean();
+        return signalArray[0] || signalArray[1];
+    }
+
     /**
      * Calculates the current error as read by the sensors
      *
