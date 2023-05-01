@@ -245,8 +245,8 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <executable>sudo</executable>
-                            <commandlineArgs>java --module-path ${project.build.directory}/distribution --module ${izzy.launcher.class} ${izzy.launcher.args}</commandlineArgs>
+                            <executable>java</executable>
+                            <commandlineArgs> --module-path ${project.build.directory}/distribution --module ${izzy.launcher.class} ${izzy.launcher.args}</commandlineArgs>
                         </configuration>
                     </plugin>
                 </plugins>
