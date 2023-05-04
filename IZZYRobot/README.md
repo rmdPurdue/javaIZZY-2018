@@ -4,7 +4,9 @@ Disclaimer: This is the code that runs on the robot itself.
 To view the control interface code, visit [this project](https://github.com/rmdPurdue/JavaMother)
 
 ## Prerequisite Software
-This project requires Git and Maven.
+This project requires Java 11, Git, and Maven.
+
+To install Java 11, visit [this link](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
 
 To install Git, visit [this link](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
@@ -29,6 +31,12 @@ After starting Mother on the choices network, enter the following command on you
 You can replace the IP address with IZZY's IP, but as of this writing, the RaspberryPi is set to 
 grab the static IP of 192.168.2.200 on the 192.168.2.0/24 network of the choices router. (you're computer
 also has to be on this network)
+
+### Troubleshooting:
+
+If choices doesn't have internet, run the following command on a network with internet before running the above command:
+
+    mvn clean compile
 
 ## IDE Integrations
 I enjoy using IntelliJ for this project because it has very easy-to-use Git and Maven features built in.
