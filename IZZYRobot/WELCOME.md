@@ -44,6 +44,7 @@ have learned from semester's past are:
 **Updated 5/1/23**
 
 1) Fine-tune obstacle detection code (ObstacleDetectionController)
+   1) Change default values of PID and threshold to match tape on IZZY
 2) Start obstacle avoidance program inside this package
    1) Instead of having to start multiple programs
 3) Make log configuration dynamic (currently hard code Mother IP in log4j2.xml)
